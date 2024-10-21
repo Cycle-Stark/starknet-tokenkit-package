@@ -1,0 +1,6 @@
+./dist
+.env
+node_modules
+.DS_Store
+src/
+tsup.config.ts
