@@ -1,0 +1,153 @@
+.tokenkit-dialog {
+    opacity: 0;
+    transform: translateY(-100%);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.tokenkit-dialog[open] {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.tokenkit-dialog.slide-down {
+    animation: slide-down 0.5s forwards;
+}
+
+.tokenkit-dialog.slide-up {
+    animation: slide-up 0.5s forwards;
+}
+
+@keyframes slide-down {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slide-up {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+}
+
+
+.tokenkit-dialog.ease-slide {
+    animation: ease-slide-down 0.5s forwards;
+}
+
+.tokenkit-dialog.ease-slide-up {
+    animation: ease-slide-up 0.5s forwards;
+}
+
+@keyframes ease-slide-down {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+        easing: ease-in;
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        easing: ease-out;
+    }
+}
+
+@keyframes ease-slide-up {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+        easing: ease-out;
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(100%);
+        easing: ease-in;
+    }
+}
+
+.tokenkit-dialog.bounce-slide {
+    animation: bounce-slide-down 0.7s forwards;
+}
+
+.tokenkit-dialog.bounce-slide-up {
+    animation: bounce-slide-up 0.7s forwards;
+}
+
+@keyframes bounce-slide-down {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+    }
+
+    60% {
+        opacity: 1;
+        transform: translateY(20%);
+    }
+
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounce-slide-up {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    60% {
+        opacity: 0.8;
+        transform: translateY(20%);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+}
+
+
+.tokenkit-dialog.fade-slide {
+    animation: fade-slide-down 0.5s forwards;
+}
+
+.tokenkit-dialog.fade-slide-up {
+    animation: fade-slide-up 0.5s forwards;
+}
+
+@keyframes fade-slide-down {
+    0% {
+        opacity: 0;
+        transform: translateY(-50%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fade-slide-up {
+    0% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateY(50%);
+    }
+}
