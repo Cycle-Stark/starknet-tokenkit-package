@@ -10,7 +10,7 @@
     "build": "tsup",
     "build:modal": "rollup -c",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "publish:package": "yarn publish --access public"
+    "deploy:package": "yarn publish --access public"
   },
   "repository": {
     "type": "git",
