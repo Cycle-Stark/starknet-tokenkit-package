@@ -43,6 +43,8 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5"
   }

@@ -134,9 +134,6 @@
   position: relative;
 }
 .tokenkit-dialog {
-  height: var(--tokenkit-modal-content-height);
-  min-height: var(--tokenkit-modal-content-height);
-  max-height: var(--tokenkit-modal-content-height);
   overflow: hidden;
   background: #000 !important;
 }
@@ -149,7 +146,6 @@
   width: 450px;
   margin: auto !important;
   max-width: 95dvw;
-  height: var(--tokenkit-modal-content-height);
   background-color: var(--tokenkit-bg-color);
   transition: all 0.3s ease-in-out;
   border-radius: var(--tokenkit-border-radius);
@@ -315,7 +311,6 @@
 .token-btn .logo-holder,
 .token-list-item .logo-holder {
   --tokenkit-size: 30px;
-  width: var(--tokenkit-size);
   min-width: var(--tokenkit-size);
   width: var(--tokenkit-size);
   height: var(--tokenkit-size);
@@ -337,7 +332,6 @@
   max-height: 100%;
 }
 .rest-of-tokens {
-  height: calc(100% - var(--tokenkit-search-common-box-height));
   overflow-Y: auto;
   padding: 10px;
   display: flex;
@@ -429,3 +423,4 @@
   align-items: center;
   column-gap: 4px;
 }
+/*# sourceMappingURL=index.css.map */
