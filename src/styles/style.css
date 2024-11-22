@@ -16,7 +16,7 @@
   min-height: var(--tokenkit-modal-content-height);
   max-height: var(--tokenkit-modal-content-height);
   overflow: hidden;
-  background: #000 !important;
+  /* background: #000 !important; */
 }
 
 
@@ -36,10 +36,11 @@
   border-radius: var(--tokenkit-border-radius);
   overscroll-behavior: contain;
   border: none;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
 }
 
 .tokenkit-dialog::backdrop {
-  /* background-color: red; */
   background-color: rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(5px);
   -webkit-backdrop-filter: blur(5px);

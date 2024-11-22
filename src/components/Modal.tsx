@@ -1,16 +1,15 @@
-import React, { CSSProperties, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { animationGroups, IModalProps, IToken } from '../types';
-import { useLiveQuery } from 'dexie-react-hooks';
-import { db } from '../configs/db';
-import { limitChars, removeTrailingZeros } from '../configs/utils';
+import { limitChars } from '../configs/utils';
 import { useTokenKitContext } from '../providers/providerUtils';
 import CloseSvg from './CloseSvg';
+import useDebounce from './hooks';
 
 
 interface ISelectAsset {
   token: IToken
   select: any
-  selectedToken?: IToken
+  selectedToken: IToken | null | undefined
   userAddress?: string
 }
 
@@ -104,108 +103,91 @@ const TokenListItem = ({ token, select, selectedToken }: ISelectAsset) => {
 }
 
 export const SelectTokenContainer = (props: IModalProps & { custsomClasses?: string, closeModal?: any }) => {
-  const { selectedToken, callBackFunc } = props
-  const { loadingTokens, network } = useTokenKitContext()
+  const { selectedToken, callBackFunc, closeModal } = props
 
-  const [totalTokens, setTotalTokens] = useState(0)
-  const [tokens, setTokens] = useState<IToken[]>([])
-  const [commonTokens, setCommonTokens] = useState<IToken[]>([])
+  const { network, mainnetAPIKey, sepoliaAPIKey } = useTokenKitContext()
 
-  const [searchedToken, setSearchedToken] = useState('');
-  const [page, setPage] = useState(1)
-
-  const have_tokens_changed = useLiveQuery(() => db.tokens.toArray())
-  const tokensPerPage = 50
-
-  const selectSingle = (token: IToken) => {
-    callBackFunc && callBackFunc(token)
-    props.closeModal && props.closeModal()
-  }
-
-  const loadCommonTokens = async () => {
-    setCommonTokens([])
-    if (network === "SN_SEPOLIA") {
-      const common_tks = await db.tokens.filter((t: IToken) => (t.common ?? false) && (t.public ?? false)).toArray()
-      setCommonTokens(common_tks)
-    }
-    else if (network === "SN_MAIN") {
-      const common_tks = await db.mainnet_tokens.filter((t: IToken) => (t.common ?? false) && (t.public ?? false)).toArray()
-      setCommonTokens(common_tks)
-    }
-  }
-
-  const sortTokens = (tokens_to_sort: any[]) => {
-
-    const _tokens: any = tokens_to_sort;
-    return _tokens?.sort((a: IToken, b: IToken) => {
-      const aScore = (a.verified ? 4 : 0) + (a.common ? 2 : 0) + (a.public ? 1 : 0);
-      const bScore = (b.verified ? 4 : 0) + (b.common ? 2 : 0) + (b.public ? 1 : 0);
-
-      // Higher score comes first
-      return bScore - aScore;
-    }) ?? [];
-  };
-
-  const loadTokensFromDB = async () => {
-    setTokens([])
-    const _totalTokens = await db.tokens.count()
-    setTotalTokens(_totalTokens)
-    const limit = tokensPerPage;
-    const offset = (page - 1) * tokensPerPage;
-    const trimmedSearchedToken = searchedToken.trim()
-    const regex = new RegExp(`(${trimmedSearchedToken})`, 'gi');
-
-    const addressSearchTerm = removeTrailingZeros(trimmedSearchedToken)
-    const addressRegex = new RegExp(`(${addressSearchTerm})`, 'gi');
-
-    if (network === "SN_SEPOLIA") {
-      const filteredTokens = await db.tokens
-        .filter((token: IToken) => {
-          const matched =
-            token.symbol.match(regex) || token.name.match(regex) || removeTrailingZeros(token.address).match(addressRegex);
-          return matched ? true : false;
-        })
-        .filter((token: IToken) => !!token.public)
-        .limit(limit)
-        .offset(offset)
-        .toArray();
-      const sortedTokens = sortTokens(filteredTokens)
-
-      setTokens(sortedTokens);
-    }
-    else if (network === "SN_MAIN") {
-      const filteredTokens = await db.mainnet_tokens
-        .filter((token: IToken) => {
-          const matched =
-            token.symbol.match(regex) || token.name.match(regex) || removeTrailingZeros(token.address).match(addressRegex);
-          return matched ? true : false;
-        })
-        .filter((token: IToken) => !!token.public)
-        .limit(limit)
-        .offset(offset)
-        .toArray();
-      const sortedTokens = sortTokens(filteredTokens)
-      setTokens(sortedTokens);
-    }
-  }
+  const [searchedToken, setSearchedToken] = useState<string>("")
+  const debouncedValue = useDebounce<string>(searchedToken, 2000);
+  const [commonTokens, setCommongTokens] = useState<IToken[]>([])
+  const [allTokens, setAllTokens] = useState<IToken[]>([])
 
   const getNetwork = () => {
     if (network === 'SN_MAIN') {
       return "Mainnet"
     }
-    if (network === 'SN_SEPOLIA') {
+    else if (network === 'SN_SEPOLIA') {
       return "Sepolia"
     }
+    return "[NO NETWORK]"
   }
 
+  const getApiKey = () => {
+    if (network === 'SN_MAIN') {
+      return mainnetAPIKey
+    }
+    else if (network === 'SN_SEPOLIA') {
+      return sepoliaAPIKey
+    }
+    return null
+  }
+
+  const selectToken = (token: IToken) => {
+    callBackFunc && callBackFunc(token)
+    closeModal && closeModal()
+  }
+
+  const loadTokens = async (common: boolean) => {
+    const apiKey = getApiKey()
+    if (!network) {
+      throw new Error("Network not set. Set it at the tokenkit wrapper to either 'SN_MAIN' or 'SN_SEPOLIA' ");
+    }
+    if (!apiKey) {
+      throw new Error("API Keys not set, set for both mainnet and sepolia ");
+    }
+
+    let endpoint = 'https://sepolia.apiv2.tokenkithq.io'
+    let fields = "address, symbol, name, decimals, common, verified, icon"
+
+    if (network === 'SN_MAIN') {
+      endpoint = `https://mainnet.apiv2.tokenkithq.io`
+    }
+
+    let url = `${endpoint}/api/tokens?limit=100&fields=${fields}&search=${debouncedValue}`;
+
+    if (common) {
+      url = `${endpoint}/api/tokens?limit=100&fields=${fields}&common=true`;
+    }
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'api-key': apiKey,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to load tokens: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      if (common) {
+        setCommongTokens(data.results)
+      } else {
+        setAllTokens(data.results)
+      }
+
+    } catch (error: any) {
+      console.error('Error loading tokens:', error?.message || error);
+    }
+
+  }
 
   useEffect(() => {
-    loadCommonTokens()
-  }, [network])
-
-  useEffect(() => {
-    loadTokensFromDB()
-  }, [searchedToken, page, loadingTokens, have_tokens_changed, network])
+    loadTokens(true)
+    loadTokens(false)
+  }, [network, debouncedValue])
 
   return (
     <div className='tokenkit-wrapper'>
@@ -238,22 +220,22 @@ export const SelectTokenContainer = (props: IModalProps & { custsomClasses?: str
                     ) : null
                   }
                   {commonTokens?.map((token: IToken, i: any) => (
-                    <TokenBtn select={selectSingle} key={`token_${i}`} token={token} selectedToken={selectedToken} />
+                    <TokenBtn select={selectToken} key={`token_${i}`} token={token} selectedToken={selectedToken} />
                   ))}
                 </div>
               </div>
             </div>
             <div className="rest-of-tokens">
               {
-                tokens?.length === 0 ? (
+                allTokens?.length === 0 ? (
                   <div className="tokens-not-found-holder">
                     <p className='no-tokens'>Token(s) Not Found! <a href='https://tokenkit-gamma.vercel.app/'>List here.</a></p>
                   </div>
                 ) : null
               }
               {
-                tokens?.map((token: any, i: number) => (
-                  <TokenListItem key={`jtoken_item_${i}`} token={token} select={selectSingle} selectedToken={selectedToken} />
+                allTokens?.map((token: any, i: number) => (
+                  <TokenListItem key={`jtoken_item_${i}`} token={token} select={selectToken} selectedToken={selectedToken} />
                 ))
               }
             </div>

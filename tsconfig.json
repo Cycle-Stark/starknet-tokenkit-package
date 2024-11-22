@@ -13,12 +13,15 @@
         "jsx": "react",
         "outDir": "dist",
         "resolveJsonModule": true,
-        "experimentalDecorators": true
+        "experimentalDecorators": true,
     },
     "include": [
         "src"
     ],
+    // "files": ["src/styles/style.css"],
     "exclude": [
-        "node_modules"
+        "node_modules",
+        "providers",
+        "configs"
     ]
 }

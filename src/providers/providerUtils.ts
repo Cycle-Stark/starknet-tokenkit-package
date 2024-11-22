@@ -1,14 +1,11 @@
 import { createContext, useContext } from "react"
+import { ITokenkitProvider } from "../types"
 
-const initialData = {
-    contract: null as any,
-    account: null as any,
-    address: null as any,
-    connection: null as any,
-    handleConnetDisconnectWalletBtnClick: null as any,
-    network: null as any,
-    reloadTokensFromContract: null as any,
-    loadingTokens: false
+
+const initialData: ITokenkitProvider = {
+    sepoliaAPIKey: null,
+    mainnetAPIKey: null,
+    network: null
 }
 
 export const TokenKitContext = createContext(initialData)

@@ -10,7 +10,7 @@ export const animationGroups = {
 
 interface IModalProps {
 
-    selectedToken: IToken | undefined
+    selectedToken: IToken | undefined | null
     children?: ReactNode
     callBackFunc: (token: IToken) => void
 
@@ -45,27 +45,30 @@ export interface IModalThemeObject {
     searchBorderColor: string
     searchFocusBorderColor: string
     primaryColor: string
+    [key: string]: string
 }
 
 export interface ITokenKitWrapper {
     children: ReactNode
     network: 'SN_MAIN' | 'SN_SEPOLIA'
-    mainnetNodeURL: string
-    sepoliaNodeURL: string
+    mainnetAPIKey: string
+    sepoliaAPIKey: string
     themeObject: IModalThemeObject
 }
+
+export interface ITokenkitProvider {
+    children?: ReactNode
+    network: 'SN_MAIN' | 'SN_SEPOLIA' | null
+    mainnetAPIKey: string | null
+    sepoliaAPIKey: string | null
+}
+
+
 
 export interface ILoadTokenKit {
     children: ReactNode
     select: any
-    token: IToken
-}
-
-export interface TokensDBInfo {
-    id: 1,
-    name: string
-    tokens_version: number
-    tokens_count: number
+    token: IToken | undefined | null
 }
 
 
