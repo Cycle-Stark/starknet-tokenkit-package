@@ -1,6 +1,5 @@
 import { BigNumber } from 'bignumber.js'
 import token_kit_abi from '../assets/token_kit_abi.json'
-import { shortString } from 'starknet'
 import erc20abi from '../assets/ERC_20_ABI.json'
 
 
@@ -27,17 +26,6 @@ export function formatNumberInternational(number: number) {
     }
 }
 
-export function bigintToShortStr(bigintstr: string) {
-    try {
-        if (!bigintstr) return ""
-        const bn = BigNumber(bigintstr)
-        const hex_sentence = `0x` + bn.toString(16)
-        return shortString.decodeShortString(hex_sentence)
-    }
-    catch (error) {
-        return bigintstr
-    }
-}
 
 export function bigintToLongAddress(bigintstr: string) {
     try {

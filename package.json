@@ -36,6 +36,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.3.3",
+    "esbuild-plugin-postcss": "^0.2.1",
     "tsup": "^8.0.1",
     "typescript": "^5.4.5"
   }
