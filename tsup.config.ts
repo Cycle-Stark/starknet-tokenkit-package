@@ -1,12 +1,22 @@
-import { defineConfig } from 'tsup';
- 
+import { defineConfig } from 'tsup'
+
 export default defineConfig({
-    format: ['cjs', 'esm'],
-    entry: ['./src/index.ts'],
-    dts: true,
-    shims: true,
-    skipNodeModulesBundle: true,
-    clean: true,
-    minify: true,
-    bundle: true,
-});
+  entry: ['src/index.ts'],
+  format: ['cjs', 'esm'],
+  dts: true,
+  splitting: false,
+  sourcemap: true,
+  clean: true,
+//   esbuildOptions(options) {
+//     options.banner = {
+//       js: `"use strict";`,
+//     }
+//   },
+  esbuildPlugins: [],
+  loader: {
+    '.css': 'css'
+  },
+//   postcss: {
+//     plugins: [autoprefixer()]
+//   }
+})

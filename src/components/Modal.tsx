@@ -196,7 +196,7 @@ export const SelectTokenContainer = (props: IModalProps & { custsomClasses?: str
           style={{ height: `${props?.modalHeight}` }}
           onClick={(e) => e.stopPropagation()}>
           <div className="custom-modal-header">
-            <h4 className="custom-modal-title">Select Token</h4>
+            <h4 className="custom-modal-title">Search for Token</h4>
             <div className="right">
               <span className="chain-id">
                 {getNetwork()}
