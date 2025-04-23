@@ -1,0 +1,23 @@
+{
+    "root": [
+        "./src/App.tsx",
+        "./src/index.ts",
+        "./src/main.tsx",
+        "./src/vite-env.d.ts",
+        "./src/components/SelectTokenContainer.tsx",
+        "./src/components/SelectTokenModal.tsx",
+        "./src/components/TokenBtn.tsx",
+        "./src/components/TokenListItem.tsx",
+        "./src/components/icons/CloseSvg.tsx",
+        "./src/components/icons/SearchSvg.tsx",
+        "./src/hooks/useDebounce.ts",
+        "./src/providers/TokenKitProvider.tsx",
+        "./src/providers/TokenkitContext.ts",
+        "./src/styles/theme.ts",
+        "./src/types/index.ts",
+        "./src/utils/index.ts",
+        "./src/wrappers/TokenKitWrapper.tsx"
+    ],
+    "errors": true,
+    "version": "5.7.3"
+}

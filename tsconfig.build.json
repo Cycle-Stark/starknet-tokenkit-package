@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "declaration": true,
+    "declarationDir": "dist/types",
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "isolatedModules": false
+  },
+  "include": ["src"],
+  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
+}
