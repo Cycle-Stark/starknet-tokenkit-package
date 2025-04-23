@@ -1,7 +1,7 @@
 {
   "name": "starknet-tokenkit",
-  "private": true,
-  "version": "3.0.0",
+  "private": false,
+  "version": "3.0.0-1",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
