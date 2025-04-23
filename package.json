@@ -1,7 +1,10 @@
 {
   "name": "starknet-tokenkit",
   "private": false,
-  "version": "3.0.0-1",
+  "version": "3.0.0-2",
+  "description": "A package that provides quick access to tokens in a modal format or you can interact with the contract to read the different tokens using the contract address and the abi.",
+  "author": "Tokenkit",
+  "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -51,5 +54,16 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "styled-components": "^6.1.15"
-  }
+  },
+  "keywords": [
+    "starknet",
+    "tokens",
+    "starknetkit",
+    "tokenkit",
+    "token"
+  ],
+  "bugs": {
+    "url": "https://github.com/Cycle-Stark/token-kit/issues"
+  },
+  "homepage": "https://tokenkithq.io"
 }
