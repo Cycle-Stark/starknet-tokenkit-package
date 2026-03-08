@@ -3,11 +3,10 @@ import { ITokenkitProvider } from '../types';
 
 // Define the initial context value
 const initialData: ITokenkitProvider = {
-  sepoliaAPIKey: null,
-  mainnetAPIKey: null,
+  apiKey: null,
   network: null,
-  endpoint: null,
-  protocol: "http"
+  mainnetEndpoint: null,
+  sepoliaEndpoint: null,
 };
 
 // Create the context

@@ -262,7 +262,7 @@ const TokenContainerFooter = styled.div`
 
 const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) => {
     const { selectedToken, callBackFunc, closeModal } = props;
-    const { network, mainnetAPIKey, sepoliaAPIKey, protocol, endpoint } = useTokenKitContext();
+    const { network, apiKey, mainnetEndpoint, sepoliaEndpoint } = useTokenKitContext();
     const [searchedToken, setSearchedToken] = useState('');
     const debouncedValue = useDebounce(searchedToken, 400);
     const [commonTokens, setCommonTokens] = useState<IToken[]>([]);
@@ -272,15 +272,9 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
     const [hasLoadedCommonTokens, setHasLoadedCommonTokens] = useState(false);
     const [hasLoadedAllTokens, setHasLoadedAllTokens] = useState(false);
 
-    // const getNetwork = () => {
-    //     if (network === 'SN_MAIN') return 'Mainnet';
-    //     if (network === 'SN_SEPOLIA') return 'Sepolia';
-    //     return '[NO NETWORK]';
-    // };
-
-    const getApiKey = () => {
-        if (network === 'SN_MAIN') return mainnetAPIKey;
-        if (network === 'SN_SEPOLIA') return sepoliaAPIKey;
+    const getEndpoint = () => {
+        if (network === 'SN_MAIN') return mainnetEndpoint;
+        if (network === 'SN_SEPOLIA') return sepoliaEndpoint;
         return null;
     };
 
@@ -296,23 +290,18 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
             if (hasLoadedAllTokens && !forceReload) return;
         }
         try {
-            const apiKey = getApiKey();
-            if (!network || !apiKey || !protocol || !endpoint) {
-                throw new Error('Network, API key, protocol, or endpoint is not set.');
+            const endpoint = getEndpoint();
+            if (!network || !apiKey || !endpoint) {
+                throw new Error('Network, API key, or endpoint is not set.');
             }
 
-            const tokensEndpoint =
-                network === 'SN_MAIN'
-                    ? `${protocol}://mainnet.${endpoint}`
-                    : `${protocol}://sepolia.${endpoint}`;
+            const baseUrl = endpoint.startsWith('http') ? endpoint : `https://${endpoint}`;
 
-            let url = `${tokensEndpoint}/api/listed-tokens?limit=1000&fields=address,symbol,name,decimals,common,verified,icon&search=${debouncedValue}`;
+            let url = `${baseUrl}/api/listed-tokens?limit=1000&fields=address,symbol,name,decimals,common,verified,icon&search=${debouncedValue}`;
 
             if (common) {
-                // console.log("Loading for common")
-                url = `${tokensEndpoint}/api/listed-tokens?limit=1000&fields=address,symbol,name,decimals,common,verified,icon&common=true`;
+                url = `${baseUrl}/api/listed-tokens?limit=1000&fields=address,symbol,name,decimals,common,verified,icon&common=true`;
             }
-            // console.log("URL: ", url)
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -329,7 +318,6 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
             const data = await response.json();
 
             if (common) {
-                // console.log("Common: ", data.results)
                 setCommonTokens(data?.results ?? []);
                 setHasLoadedCommonTokens(true);
             } else {

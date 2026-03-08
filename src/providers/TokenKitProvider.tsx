@@ -8,22 +8,19 @@ interface TokenKitProviderProps extends ITokenkitProvider {
 
 const TokenKitProvider = ({
     children,
-    sepoliaAPIKey,
-    mainnetAPIKey,
+    apiKey,
     network,
-    protocol,
-    endpoint
+    mainnetEndpoint,
+    sepoliaEndpoint,
 }: TokenKitProviderProps) => {
-    // Memoize the context value to avoid unnecessary re-renders
     const contextValue = useMemo(
         () => ({
-            sepoliaAPIKey,
-            mainnetAPIKey,
+            apiKey,
             network,
-            protocol,
-            endpoint
+            mainnetEndpoint,
+            sepoliaEndpoint,
         }),
-        [sepoliaAPIKey, mainnetAPIKey, network]
+        [apiKey, network, mainnetEndpoint, sepoliaEndpoint]
     );
 
     return (

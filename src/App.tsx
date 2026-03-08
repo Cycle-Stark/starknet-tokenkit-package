@@ -68,11 +68,10 @@ const CustomWrapper = ({ children }: { children: ReactNode }) => {
                 </ButtonContainer>
                 <TokenKitWrapper
                     network="SN_SEPOLIA"
-                    mainnetAPIKey="jphx3Z1S.Ex6T1nYZeH7K1CNJgNWvSRCojYewUT9y"
-                    sepoliaAPIKey="SxY1EstD.q3Uxe2JErAtnGe0p7DqRdkl7n2V7Wx14"
+                    apiKey="SxY1EstD.q3Uxe2JErAtnGe0p7DqRdkl7n2V7Wx14"
+                    mainnetEndpoint="localhost:8000"
+                    sepoliaEndpoint="localhost:8000"
                     themeObject={currentTheme}
-                    protocol="http"
-                    endpoint="localhost:8000"
                 >
                     {children}
                 </TokenKitWrapper>

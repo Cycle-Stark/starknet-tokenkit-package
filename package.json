@@ -1,7 +1,7 @@
 {
   "name": "starknet-tokenkit",
   "private": false,
-  "version": "3.0.0-2",
+  "version": "3.0.0-3",
   "description": "A package that provides quick access to tokens in a modal format or you can interact with the contract to read the different tokens using the contract address and the abi.",
   "author": "Tokenkit",
   "license": "MIT",
@@ -25,7 +25,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "build:package": "tsup",
+    "build:package": "rm -rf dist && tsup",
     "build:tsc": "tsc -b"
   },
   "dependencies": {

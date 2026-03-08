@@ -60,20 +60,18 @@ export interface Theme {
 export interface ITokenKitWrapper {
     children: ReactNode
     network: 'SN_MAIN' | 'SN_SEPOLIA'
-    mainnetAPIKey: string
-    sepoliaAPIKey: string
-    endpoint: string | null
-    protocol: "https" | "http"
+    apiKey: string
+    mainnetEndpoint: string
+    sepoliaEndpoint: string
     themeObject: Theme
 }
 
 export interface ITokenkitProvider {
     children?: ReactNode
     network: 'SN_MAIN' | 'SN_SEPOLIA' | null
-    mainnetAPIKey: string | null
-    sepoliaAPIKey: string | null
-    endpoint: string | null
-    protocol: "https" | "http"
+    apiKey: string | null
+    mainnetEndpoint: string | null
+    sepoliaEndpoint: string | null
 }
 
 
