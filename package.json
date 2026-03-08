@@ -1,7 +1,7 @@
 {
   "name": "starknet-tokenkit",
   "private": false,
-  "version": "3.0.0-3",
+  "version": "3.0.1",
   "description": "A package that provides quick access to tokens in a modal format or you can interact with the contract to read the different tokens using the contract address and the abi.",
   "author": "Tokenkit",
   "license": "MIT",
