@@ -9,6 +9,7 @@ import { useTokenKitContext } from '../providers/TokenkitContext';
 import SearchSvg from './icons/SearchSvg';
 import TokenBtnSkeleton from './skeletons/TokenBtnSkeleton';
 import TokenListItemSkeleton from './skeletons/TokenListItemSkeleton';
+import { getRecentTokens, saveRecentToken } from '../utils/recentTokens';
 
 const SelectContainer = styled.div<{ height?: string, width?: string }>`
   width: ${({ width }) => width || '420px'};
@@ -231,6 +232,16 @@ const Anchor = styled.a`
 `;
 
 
+const SectionLabel = styled.div`
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: ${({ theme }) => theme.colors.textColor};
+    opacity: 0.45;
+    padding: 8px 12px 4px;
+`;
+
 const LoadingSentinel = styled.div`
     display: flex;
     justify-content: center;
@@ -278,6 +289,7 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
 
     const [hasLoadedCommonTokens, setHasLoadedCommonTokens] = useState(false);
     const tokensToLoad = options?.tokensToLoad ?? 'public';
+    const [recentTokens, setRecentTokens] = useState<IToken[]>(() => getRecentTokens());
 
     // Infinite scroll state
     const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
@@ -296,6 +308,9 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
     };
 
     const selectToken = (token: IToken) => {
+        saveRecentToken(token);
+        setRecentTokens(getRecentTokens());
+        setSearchedToken('');
         callBackFunc?.(token);
         closeModal?.();
     };
@@ -535,6 +550,21 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
                         Array(10).fill(null).map((_, i) => <TokenListItemSkeleton key={i} index={i} />)
                     ) : (
                         <>
+                            {recentTokens.length > 0 && !debouncedValue && (
+                                <>
+                                    <SectionLabel>Recent</SectionLabel>
+                                    {recentTokens.map((token) => (
+                                        <div key={`recent-${token.address}`} data-token-item>
+                                            <TokenListItem
+                                                token={token}
+                                                select={selectToken}
+                                                selectedToken={selectedToken}
+                                            />
+                                        </div>
+                                    ))}
+                                    <SectionLabel>All Tokens</SectionLabel>
+                                </>
+                            )}
                             {allTokens.map((token, index) => (
                                 <div key={token.address} data-token-item>
                                     <TokenListItem
