@@ -100,6 +100,7 @@ const RemoveButton = styled.button`
   align-items: center;
   justify-content: center;
   border-radius: 4px;
+  color: ${({ theme }) => theme.colors.textColor};
   opacity: 0.4;
   transition: opacity 0.15s ease;
   flex-shrink: 0;

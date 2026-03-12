@@ -23,6 +23,14 @@ export const removeRecentToken = (address: string): void => {
     }
 };
 
+export const clearAllRecentTokens = (): void => {
+    try {
+        localStorage.removeItem(STORAGE_KEY);
+    } catch {
+        // localStorage may be unavailable
+    }
+};
+
 export const saveRecentToken = (token: IToken): void => {
     try {
         const existing = getRecentTokens();

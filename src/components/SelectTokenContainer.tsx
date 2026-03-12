@@ -9,7 +9,7 @@ import { useTokenKitContext } from '../providers/TokenkitContext';
 import SearchSvg from './icons/SearchSvg';
 import TokenBtnSkeleton from './skeletons/TokenBtnSkeleton';
 import TokenListItemSkeleton from './skeletons/TokenListItemSkeleton';
-import { getRecentTokens, saveRecentToken, removeRecentToken } from '../utils/recentTokens';
+import { getRecentTokens, saveRecentToken, removeRecentToken, clearAllRecentTokens } from '../utils/recentTokens';
 
 const SelectContainer = styled.div<{ height?: string, width?: string }>`
   width: ${({ width }) => width || '420px'};
@@ -232,14 +232,37 @@ const Anchor = styled.a`
 `;
 
 
-const SectionLabel = styled.div`
+const SectionLabelRow = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px 4px;
+`;
+
+const SectionLabel = styled.span`
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: ${({ theme }) => theme.colors.textColor};
     opacity: 0.45;
-    padding: 8px 12px 4px;
+`;
+
+const ClearAllButton = styled.button`
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 500;
+    color: ${({ theme }) => theme.colors.primaryColor};
+    opacity: 0.7;
+    padding: 0;
+    font-family: inherit;
+    transition: opacity 0.15s ease;
+
+    &:hover {
+        opacity: 1;
+    }
 `;
 
 const LoadingSentinel = styled.div`
@@ -318,6 +341,11 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
     const handleRemoveRecent = useCallback((address: string) => {
         removeRecentToken(address);
         setRecentTokens(getRecentTokens());
+    }, []);
+
+    const handleClearAllRecent = useCallback(() => {
+        clearAllRecentTokens();
+        setRecentTokens([]);
     }, []);
 
     const fetchTokens = useCallback(async (url: string, headers: Record<string, string>) => {
@@ -557,7 +585,10 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
                         <>
                             {recentTokens.length > 0 && !debouncedValue && (
                                 <>
-                                    <SectionLabel>Recent</SectionLabel>
+                                    <SectionLabelRow>
+                                        <SectionLabel>Recent</SectionLabel>
+                                        <ClearAllButton onClick={handleClearAllRecent}>Clear all</ClearAllButton>
+                                    </SectionLabelRow>
                                     {recentTokens.map((token) => (
                                         <div key={`recent-${token.address}`} data-token-item>
                                             <TokenListItem
@@ -568,7 +599,9 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
                                             />
                                         </div>
                                     ))}
-                                    <SectionLabel>All Tokens</SectionLabel>
+                                    <SectionLabelRow>
+                                        <SectionLabel>All Tokens</SectionLabel>
+                                    </SectionLabelRow>
                                 </>
                             )}
                             {allTokens.map((token, index) => (
