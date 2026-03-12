@@ -9,7 +9,7 @@ import { useTokenKitContext } from '../providers/TokenkitContext';
 import SearchSvg from './icons/SearchSvg';
 import TokenBtnSkeleton from './skeletons/TokenBtnSkeleton';
 import TokenListItemSkeleton from './skeletons/TokenListItemSkeleton';
-import { getRecentTokens, saveRecentToken } from '../utils/recentTokens';
+import { getRecentTokens, saveRecentToken, removeRecentToken } from '../utils/recentTokens';
 
 const SelectContainer = styled.div<{ height?: string, width?: string }>`
   width: ${({ width }) => width || '420px'};
@@ -315,6 +315,11 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
         closeModal?.();
     };
 
+    const handleRemoveRecent = useCallback((address: string) => {
+        removeRecentToken(address);
+        setRecentTokens(getRecentTokens());
+    }, []);
+
     const fetchTokens = useCallback(async (url: string, headers: Record<string, string>) => {
         const response = await fetch(url, { method: 'GET', headers });
         if (!response.ok) {
@@ -559,6 +564,7 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
                                                 token={token}
                                                 select={selectToken}
                                                 selectedToken={selectedToken}
+                                                onRemove={handleRemoveRecent}
                                             />
                                         </div>
                                     ))}

@@ -91,11 +91,30 @@ const TokenAddress = styled.span`
   letter-spacing: 0.02em;
 `;
 
+const RemoveButton = styled.button`
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  opacity: 0.4;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+
+  &:hover {
+    opacity: 0.8;
+  }
+`;
+
 interface ISelectAsset {
   token: IToken;
   select: (token: IToken) => void;
   selectedToken: IToken | null | undefined;
   isFocused?: boolean;
+  onRemove?: (address: string) => void;
 }
 
 const truncateAddress = (address: string) => {
@@ -103,10 +122,15 @@ const truncateAddress = (address: string) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-const TokenListItem = ({ token, select, selectedToken, isFocused }: ISelectAsset) => {
+const TokenListItem = ({ token, select, selectedToken, isFocused, onRemove }: ISelectAsset) => {
 
   const selectToken = () => {
     select({ ...token });
+  };
+
+  const handleRemove = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRemove?.(token.address);
   };
 
   const getBadgeUrl = () => {
@@ -159,6 +183,13 @@ const TokenListItem = ({ token, select, selectedToken, isFocused }: ISelectAsset
           <TokenAddress>{truncateAddress(token?.address)}</TokenAddress>
         </TokenMeta>
       </TokenContent>
+      {onRemove && (
+        <RemoveButton onClick={handleRemove} title="Remove from recent">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10.5 3.5L3.5 10.5M3.5 3.5L10.5 10.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </RemoveButton>
+      )}
     </TokenListItemContainer>
   );
 };

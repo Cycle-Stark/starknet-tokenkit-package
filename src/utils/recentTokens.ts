@@ -13,6 +13,16 @@ export const getRecentTokens = (): IToken[] => {
     }
 };
 
+export const removeRecentToken = (address: string): void => {
+    try {
+        const existing = getRecentTokens();
+        const updated = existing.filter(t => t.address !== address);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    } catch {
+        // localStorage may be unavailable
+    }
+};
+
 export const saveRecentToken = (token: IToken): void => {
     try {
         const existing = getRecentTokens();
