@@ -4,42 +4,61 @@ import { limitChars } from '../utils';
 
 
 const TokenBtnContainer = styled.div<{ isselected: boolean }>`
-    width: fit-content !important;
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 6px;
-    padding: 6px 8px;
+    padding: 8px 12px;
     box-sizing: border-box;
     margin: 0;
-    border-radius: 8px;
+    border-radius: ${({ theme }) => `${Math.min(theme.borderRadius, 12)}px`};
     cursor: pointer;
-    height: fit-content;
+    min-width: 64px;
+    transition: background 0.15s ease, transform 0.1s ease;
 
     background: ${({ isselected, theme }) =>
         isselected ? theme.colors.headerFooterBg : 'transparent'};
     pointer-events: ${({ isselected }) => (isselected ? 'none' : 'all')};
+    opacity: ${({ isselected }) => (isselected ? 0.6 : 1)};
 
     &:hover {
-    background: ${({ theme }) => theme.colors.headerFooterBg};
+        background: ${({ theme }) => theme.colors.headerFooterBg};
+        transform: translateY(-1px);
+    }
+
+    &:active {
+        transform: scale(0.97);
     }
 `;
 
 const LogoHolder = styled.div`
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: ${({ theme }) => theme.colors.headerFooterBg};
+  overflow: hidden;
+  flex-shrink: 0;
+`;
+
+const LogoImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
 `;
 
 const TokenSymbol = styled.p`
-    font-size: 14px;
+    font-size: 12px;
+    font-weight: 500;
     width: fit-content;
     color: ${({ theme }) => theme.colors.textColor};
     box-sizing: border-box;
     margin: 0;
+    white-space: nowrap;
+    text-align: center;
 `;
 
 interface ISelectAsset {
@@ -60,20 +79,14 @@ const TokenBtn = ({ token, select, selectedToken }: ISelectAsset) => {
             onClick={selectToken}
         >
             <LogoHolder>
-                {!token.icon ? (
-                    <TokenSymbol style={{ textTransform: 'uppercase', fontSize: '12px' }}>
+                {!token.logo ? (
+                    <TokenSymbol style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 600 }}>
                         {limitChars(token?.symbol, 2, false)}
                     </TokenSymbol>
                 ) : (
-                    <img
-                        src={token.icon}
-                        alt=""
-                        className="logo"
-                        style={{
-                            border: "none",
-                            height: "85%",
-                            overflow: "hidden"
-                        }}
+                    <LogoImage
+                        src={token.logo}
+                        alt={token.symbol}
                     />
                 )}
             </LogoHolder>

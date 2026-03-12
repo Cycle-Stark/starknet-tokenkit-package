@@ -12,6 +12,7 @@ const TokenKitProvider = ({
     network,
     mainnetEndpoint,
     sepoliaEndpoint,
+    options,
 }: TokenKitProviderProps) => {
     const contextValue = useMemo(
         () => ({
@@ -19,8 +20,9 @@ const TokenKitProvider = ({
             network,
             mainnetEndpoint,
             sepoliaEndpoint,
+            options: { tokensToLoad: 'public' as const, ...options },
         }),
-        [apiKey, network, mainnetEndpoint, sepoliaEndpoint]
+        [apiKey, network, mainnetEndpoint, sepoliaEndpoint, options]
     );
 
     return (

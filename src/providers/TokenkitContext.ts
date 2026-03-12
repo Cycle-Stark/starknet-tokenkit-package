@@ -7,6 +7,7 @@ const initialData: ITokenkitProvider = {
   network: null,
   mainnetEndpoint: null,
   sepoliaEndpoint: null,
+  options: { tokensToLoad: 'public' },
 };
 
 // Create the context

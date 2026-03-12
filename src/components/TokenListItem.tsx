@@ -5,13 +5,15 @@ import { limitChars } from '../utils';
 const TokenListItemContainer = styled.div<{ isselected: boolean }>`
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px;
-  border-radius: 8px;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: ${({ theme }) => `${Math.min(theme.borderRadius, 12)}px`};
   cursor: pointer;
+  transition: background 0.15s ease;
   background: ${({ isselected, theme }) =>
     isselected ? theme.colors.headerFooterBg : 'transparent'};
   pointer-events: ${({ isselected }) => (isselected ? 'none' : 'all')};
+  opacity: ${({ isselected }) => (isselected ? 0.6 : 1)};
 
   &:hover {
     background: ${({ theme }) => theme.colors.headerFooterBg};
@@ -19,43 +21,72 @@ const TokenListItemContainer = styled.div<{ isselected: boolean }>`
 `;
 
 const LogoHolder = styled.div`
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   background: ${({ theme }) => theme.colors.headerFooterBg};
+  overflow: hidden;
+`;
+
+const LogoImage = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border: none;
 `;
 
 const TokenContent = styled.div`
   flex: 1;
   display: flex;
-  gap: 6px;
+  gap: 3px;
   flex-direction: column;
+  min-width: 0;
 `;
 
-const SymbolHolder = styled.div`
+const NameRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 `;
 
-const TokenSymbol = styled.p`
+const TokenNamePrimary = styled.p`
   padding: 0;
   margin: 0;
   box-sizing: border-box;
   font-size: 14px;
+  font-weight: 500;
   color: ${({ theme }) => theme.colors.textColor};
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
-const TokenName = styled.p`
+const TokenMeta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const TokenSymbolSecondary = styled.span`
   padding: 0;
   margin: 0;
   box-sizing: border-box;
   font-size: 12px;
   color: ${({ theme }) => theme.colors.textColor};
-  opacity: 0.8;
+  opacity: 0.55;
+  font-weight: 400;
+`;
+
+const TokenAddress = styled.span`
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.textColor};
+  opacity: 0.35;
+  font-family: monospace;
+  letter-spacing: 0.02em;
 `;
 
 interface ISelectAsset {
@@ -63,6 +94,11 @@ interface ISelectAsset {
   select: (token: IToken) => void;
   selectedToken: IToken | null | undefined;
 }
+
+const truncateAddress = (address: string) => {
+  if (!address || address.length < 10) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+};
 
 const TokenListItem = ({ token, select, selectedToken }: ISelectAsset) => {
 
@@ -91,38 +127,33 @@ const TokenListItem = ({ token, select, selectedToken }: ISelectAsset) => {
       onClick={selectToken}
     >
       <LogoHolder>
-        {!token.icon ? (
-          <TokenSymbol style={{ textTransform: 'uppercase', fontSize: '12px' }}>
+        {!token.logo ? (
+          <TokenNamePrimary style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 600 }}>
             {limitChars(token?.symbol, 2, false)}
-          </TokenSymbol>
+          </TokenNamePrimary>
         ) : (
-          <img
-            src={token.icon}
-            alt=""
-            className="logo"
-            style={{
-              maxHeight: "80%",
-              overflow: "hidden"
-            }}
+          <LogoImage
+            src={token.logo}
+            alt={token.symbol}
           />
         )}
       </LogoHolder>
       <TokenContent>
-        <SymbolHolder>
-          <TokenSymbol>{token?.symbol}</TokenSymbol>
+        <NameRow>
+          <TokenNamePrimary>{token?.name}</TokenNamePrimary>
           {getBadgeUrl() && (
             <img
               src={getBadgeUrl()?.badge}
               title={getBadgeUrl()?.msg}
               height="14px"
               width="14px"
-              style={{
-                marginBottom: "10px"
-              }}
             />
           )}
-        </SymbolHolder>
-        <TokenName>{token?.name}</TokenName>
+        </NameRow>
+        <TokenMeta>
+          <TokenSymbolSecondary>{token?.symbol}</TokenSymbolSecondary>
+          <TokenAddress>{truncateAddress(token?.address)}</TokenAddress>
+        </TokenMeta>
       </TokenContent>
     </TokenListItemContainer>
   );

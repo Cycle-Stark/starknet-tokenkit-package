@@ -24,7 +24,7 @@ export interface IToken {
     name: string
     symbol: string
     decimals: number
-    icon: string
+    logo: string
 
     verified?: boolean
     public?: boolean
@@ -57,6 +57,10 @@ export interface Theme {
     height: string;
 }
 
+export interface TokenKitOptions {
+    tokensToLoad?: 'all' | 'public'
+}
+
 export interface ITokenKitWrapper {
     children: ReactNode
     network: 'SN_MAIN' | 'SN_SEPOLIA'
@@ -64,6 +68,7 @@ export interface ITokenKitWrapper {
     mainnetEndpoint: string
     sepoliaEndpoint: string
     themeObject: Theme
+    options?: TokenKitOptions
 }
 
 export interface ITokenkitProvider {
@@ -72,6 +77,7 @@ export interface ITokenkitProvider {
     apiKey: string | null
     mainnetEndpoint: string | null
     sepoliaEndpoint: string | null
+    options?: TokenKitOptions
 }
 
 
