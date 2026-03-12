@@ -15,3 +15,12 @@ Also you can add your own token by visiting the landing page: [Tokenkit](https:/
 
 
 Learn more about complete setup [here](https://docs.tokenkithq.io/docs/tokenkit-sdk/installation)
+
+
+## To build use
+
+```bash
+npm run build
+```
+
+Don't use tsup to build or tsc
