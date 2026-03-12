@@ -24,6 +24,7 @@ const SelectContainer = styled.div<{ height?: string, width?: string }>`
   max-height: 95dvh;
   font-family: ${({ theme }) => theme.fonts.fontFamily || `"Geist", "Inter", sans-serif`};
   border: 1px solid ${({ theme }) => theme.colors.searchBorderColor}20;
+  outline: none;
 `;
 
 const ModalHeader = styled.div`
@@ -283,8 +284,10 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isLoadingInitial, setIsLoadingInitial] = useState(true);
     const initialLoadTriggered = useRef(false);
+    const [focusedIndex, setFocusedIndex] = useState(-1);
     const sentinelRef = useRef<HTMLDivElement | null>(null);
     const listContainerRef = useRef<HTMLDivElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
     const getEndpoint = () => {
         if (network === 'SN_MAIN') return mainnetEndpoint;
@@ -434,8 +437,59 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
         return () => observer.disconnect();
     }, [nextPageUrl, isLoadingMore, loadNextPage]);
 
+    // Reset focused index when tokens change
+    useEffect(() => {
+        setFocusedIndex(-1);
+    }, [allTokens.length, debouncedValue]);
+
+    // Keyboard navigation
+    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+        if (allTokens.length === 0) return;
+
+        switch (e.key) {
+            case 'ArrowDown': {
+                e.preventDefault();
+                setFocusedIndex(prev => {
+                    const next = prev < allTokens.length - 1 ? prev + 1 : prev;
+                    // Scroll into view
+                    const container = listContainerRef.current;
+                    if (container) {
+                        const items = container.querySelectorAll('[data-token-item]');
+                        items[next]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                    return next;
+                });
+                break;
+            }
+            case 'ArrowUp': {
+                e.preventDefault();
+                setFocusedIndex(prev => {
+                    const next = prev > 0 ? prev - 1 : 0;
+                    const container = listContainerRef.current;
+                    if (container) {
+                        const items = container.querySelectorAll('[data-token-item]');
+                        items[next]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+                    }
+                    return next;
+                });
+                break;
+            }
+            case 'Enter': {
+                if (focusedIndex >= 0 && focusedIndex < allTokens.length) {
+                    e.preventDefault();
+                    selectToken(allTokens[focusedIndex]);
+                }
+                break;
+            }
+            case 'Escape': {
+                closeModal?.();
+                break;
+            }
+        }
+    }, [allTokens, focusedIndex, selectToken, closeModal]);
+
     return (
-        <SelectContainer width={props.modalWidth} height={props.modalHeight}>
+        <SelectContainer ref={containerRef} tabIndex={0} onKeyDown={handleKeyDown} width={props.modalWidth} height={props.modalHeight}>
             <ModalHeader>
                 <ModalTitle>Select Token</ModalTitle>
                 <CloseButton onClick={closeModal}>
@@ -481,13 +535,15 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
                         Array(10).fill(null).map((_, i) => <TokenListItemSkeleton key={i} index={i} />)
                     ) : (
                         <>
-                            {allTokens.map((token) => (
-                                <TokenListItem
-                                    key={token.address}
-                                    token={token}
-                                    select={selectToken}
-                                    selectedToken={selectedToken}
-                                />
+                            {allTokens.map((token, index) => (
+                                <div key={token.address} data-token-item>
+                                    <TokenListItem
+                                        token={token}
+                                        select={selectToken}
+                                        selectedToken={selectedToken}
+                                        isFocused={index === focusedIndex}
+                                    />
+                                </div>
                             ))}
 
                             {errorMessage ? (

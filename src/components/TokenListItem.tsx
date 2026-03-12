@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import { IToken } from '../types';
 import { limitChars } from '../utils';
 
-const TokenListItemContainer = styled.div<{ isselected: boolean }>`
+const TokenListItemContainer = styled.div<{ isselected: boolean; isfocused?: boolean }>`
   display: flex;
   align-items: center;
   gap: 12px;
@@ -10,10 +10,12 @@ const TokenListItemContainer = styled.div<{ isselected: boolean }>`
   border-radius: ${({ theme }) => `${Math.min(theme.borderRadius, 12)}px`};
   cursor: pointer;
   transition: background 0.15s ease;
-  background: ${({ isselected, theme }) =>
-    isselected ? theme.colors.headerFooterBg : 'transparent'};
+  background: ${({ isselected, isfocused, theme }) =>
+    isselected || isfocused ? theme.colors.headerFooterBg : 'transparent'};
   pointer-events: ${({ isselected }) => (isselected ? 'none' : 'all')};
   opacity: ${({ isselected }) => (isselected ? 0.6 : 1)};
+  outline: ${({ isfocused, theme }) => isfocused ? `2px solid ${theme.colors.primaryColor}40` : 'none'};
+  outline-offset: -2px;
 
   &:hover {
     background: ${({ theme }) => theme.colors.headerFooterBg};
@@ -93,6 +95,7 @@ interface ISelectAsset {
   token: IToken;
   select: (token: IToken) => void;
   selectedToken: IToken | null | undefined;
+  isFocused?: boolean;
 }
 
 const truncateAddress = (address: string) => {
@@ -100,7 +103,7 @@ const truncateAddress = (address: string) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
 
-const TokenListItem = ({ token, select, selectedToken }: ISelectAsset) => {
+const TokenListItem = ({ token, select, selectedToken, isFocused }: ISelectAsset) => {
 
   const selectToken = () => {
     select({ ...token });
@@ -124,6 +127,7 @@ const TokenListItem = ({ token, select, selectedToken }: ISelectAsset) => {
   return (
     <TokenListItemContainer
       isselected={token.address === selectedToken?.address}
+      isfocused={isFocused}
       onClick={selectToken}
     >
       <LogoHolder>
