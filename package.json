@@ -1,13 +1,13 @@
 {
   "name": "starknet-tokenkit",
   "private": false,
-  "version": "3.0.5",
+  "version": "3.0.6",
   "description": "A package that provides quick access to tokens in a modal format or you can interact with the contract to read the different tokens using the contract address and the abi.",
   "author": "Tokenkit",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "main": "./dist/starknet-tokenkit.cjs",
+  "module": "./dist/starknet-tokenkit.js",
   "types": "./dist/types/index.d.ts",
   "files": [
     "dist"
