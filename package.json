@@ -26,7 +26,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build:package": "rm -rf dist && tsup",
-    "build:tsc": "rm -rf dist && tsc -b"
+    "build:tsc": "rm -rf dist && tsc -b",
+    "build:pages": "vite build --config vite.config.pages.ts",
+    "preview:pages": "vite preview --config vite.config.pages.ts"
   },
   "dependencies": {
     "bignumber.js": "^9.1.2"
