@@ -503,17 +503,18 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
         loadCommonTokens();
     }, [loadCommonTokens]);
 
-    // Refetch everything when tokensToLoad option changes
+    // Refetch everything when network or tokensToLoad changes.
+    // Resets both flags so loadCommonTokens (early-returns on hasLoadedCommonTokens)
+    // and the initial-page loader (gated on isLoadingInitial) will both re-run.
     useEffect(() => {
-        // Reset common tokens
         setCommonTokens([]);
         setHasLoadedCommonTokens(false);
-        // Reset all tokens
         setAllTokens([]);
         setNextPageUrl(null);
         setIsLoadingInitial(true);
         initialLoadTriggered.current = false;
-    }, [tokensToLoad]);
+        setSearchedToken('');
+    }, [network, tokensToLoad]);
 
     // Reload recent tokens when network or opt-in flag changes
     useEffect(() => {
