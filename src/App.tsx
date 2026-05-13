@@ -481,7 +481,7 @@ const CustomWrapper = ({ children, currentTheme, options, network }: { children:
   return (
     <TokenKitWrapper
       network={network}
-      apiKey="PDll4r90.IWeR3t3sllqZlZbnGoobgHAKhB4klhl1"
+      apiKey="9xNznDbt.jcf2nGOB3tPL803jpgd2aqVKchW88K5l"
       mainnetEndpoint="https://api.tokenkithq.io"
       sepoliaEndpoint="https://api.sepolia.tokenkithq.io"
       themeObject={currentTheme}

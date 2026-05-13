@@ -262,9 +262,11 @@ const Paragraph = styled.p`
 
 const TokensNotFound = styled.p`
   text-align: center;
+  font-size: 11px;
   color: ${({ theme }) => theme.colors.textColor};
+  opacity: 0.55;
   margin: 0;
-  padding: 0;
+  padding: 8px 0;
   box-sizing: border-box;
 `;
 
@@ -366,8 +368,6 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
     const debouncedValue = useDebounce(searchedToken, 400);
     const [commonTokens, setCommonTokens] = useState<IToken[]>([]);
     const [allTokens, setAllTokens] = useState<IToken[]>([]);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
     const [hasLoadedCommonTokens, setHasLoadedCommonTokens] = useState(false);
     const tokensToLoad = options?.tokensToLoad ?? 'public';
     const enableRecent = options?.enableRecent ?? false;
@@ -480,7 +480,6 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
             }
 
             setNextPageUrl(nextUrl);
-            setErrorMessage(null);
         } catch (error) {
             const msg = error instanceof Error ? error.message : String(error);
             if (error instanceof TypeError && msg.includes("Failed to fetch")) {
@@ -488,7 +487,6 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
             } else {
                 console.error("Error loading tokens:", msg);
             }
-            setErrorMessage(`Failed to load tokens: ${msg}`);
         }
     }, [network, apiKey, getEndpoint, debouncedValue, fetchTokens, tokensToLoad, origin]);
 
@@ -696,10 +694,6 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
                                     />
                                 </div>
                             ))}
-
-                            {errorMessage ? (
-                                <TokensNotFound>[{errorMessage}]</TokensNotFound>
-                            ) : null}
 
                             {allTokens.length === 0 && !isLoadingMore && (
                                 <>
