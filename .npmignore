@@ -3,9 +3,13 @@ node_modules
 .DS_Store
 src/
 public/
+plans/
 rollup.config.js
 vite.config.ts
+tsup.config.ts
 yarn.lock
+pnpm-lock.yaml
 tsconfig_starknetkit.json
 eslint.config.js
 index.html
+*.tgz

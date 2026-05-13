@@ -19,11 +19,18 @@
 ## Proposed Features
 
 ### 1. Token Balance Display
-Show the user's token balance next to each token in the list. Requires wallet connection context from the consuming dApp.
+Show the user's token balance next to each token in the list. The dApp developer passes the active wallet address via the options bag — TokenKit stays wallet-agnostic (no starknet-react / get-starknet dependency).
 
-- Add optional `balances` prop or `getBalance` callback
+**Approach:**
+1. DApp passes `accountAddress` through options: `options={{ accountAddress: '0x123...' }}`
+2. When `accountAddress` is present, fetch held tokens from the TokenKit API (endpoint returns tokens the address holds)
+3. Multicall `balanceOf` for just those tokens (small subset, ~10-30, not the full list)
+4. Map balances onto the token list in the UI
+
+**UI changes:**
 - Display formatted balance on the right side of each TokenListItem
-- Sort by balance option (tokens with balance first)
+- Sort tokens with balance to the top of the list
+- When `accountAddress` is absent, no balance features activate — works as it does now
 
 ### 2. Token Favorites / Pinned Tokens
 Let users pin tokens that always appear at the top, separate from recent selections.

@@ -42,6 +42,7 @@ const Dialog = styled.dialog<{ closing?: boolean }>`
   background: transparent;
   box-shadow: none;
   box-sizing: border-box;
+  font-family: ${({ theme }) => theme.fonts.fontFamily || `"Geist", "Inter", sans-serif`};
   animation: ${({ closing }) => closing ? fadeOut : fadeIn} 0.2s ease-out forwards;
 
   &::backdrop {

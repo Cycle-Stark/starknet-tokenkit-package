@@ -22,21 +22,27 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  min-width: 64px;
+  gap: 5px;
+  padding: 6px 10px;
+  min-width: 56px;
+
+  @media (max-width: 480px) {
+    padding: 5px 8px;
+    min-width: 52px;
+    gap: 4px;
+  }
 `;
 
 const Circle = styled(SkeletonPulse)`
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   flex-shrink: 0;
 `;
 
 const TextBar = styled(SkeletonPulse)`
-  width: 32px;
-  height: 10px;
+  width: 28px;
+  height: 9px;
   border-radius: 4px;
 `;
 

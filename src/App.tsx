@@ -481,7 +481,7 @@ const CustomWrapper = ({ children, currentTheme, options, network }: { children:
   return (
     <TokenKitWrapper
       network={network}
-      apiKey="P6LscWV2.OM5qomuHYTv1BhWRD9qHvlF9LDmJISFR"
+      apiKey="PDll4r90.IWeR3t3sllqZlZbnGoobgHAKhB4klhl1"
       mainnetEndpoint="https://api.tokenkithq.io"
       sepoliaEndpoint="https://api.sepolia.tokenkithq.io"
       themeObject={currentTheme}
@@ -504,7 +504,11 @@ const App = () => {
   // Options state
   const [tokensToLoad, setTokensToLoad] = useState<'all' | 'public'>('public');
   const [network, setNetwork] = useState<'SN_MAIN' | 'SN_SEPOLIA'>('SN_MAIN');
-  const currentOptions = useMemo<TokenKitOptions>(() => ({ tokensToLoad }), [tokensToLoad]);
+  const [enableRecent, setEnableRecent] = useState<boolean>(false);
+  const currentOptions = useMemo<TokenKitOptions>(
+    () => ({ tokensToLoad, enableRecent }),
+    [tokensToLoad, enableRecent]
+  );
 
   // Custom theme state — start from a deep copy of dark
   const [customTheme, setCustomTheme] = useState<Theme>(JSON.parse(JSON.stringify(themes.dark)));
@@ -592,6 +596,13 @@ const App = () => {
               <ToggleGroup>
                 <ToggleOption isActive={tokensToLoad === 'public'} onClick={() => setTokensToLoad('public')}>Public</ToggleOption>
                 <ToggleOption isActive={tokensToLoad === 'all'} onClick={() => setTokensToLoad('all')}>All</ToggleOption>
+              </ToggleGroup>
+            </OptionRow>
+            <OptionRow>
+              <OptionLabel>Recent History</OptionLabel>
+              <ToggleGroup>
+                <ToggleOption isActive={!enableRecent} onClick={() => setEnableRecent(false)}>Off</ToggleOption>
+                <ToggleOption isActive={enableRecent} onClick={() => setEnableRecent(true)}>On</ToggleOption>
               </ToggleGroup>
             </OptionRow>
           </SidebarSection>

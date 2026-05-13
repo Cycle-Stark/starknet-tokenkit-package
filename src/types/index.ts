@@ -59,6 +59,8 @@ export interface Theme {
 
 export interface TokenKitOptions {
     tokensToLoad?: 'all' | 'public'
+    /** Opt in to persisting and displaying a "Recent" tokens section. Default: false. */
+    enableRecent?: boolean
 }
 
 export interface ITokenKitWrapper {
@@ -69,6 +71,8 @@ export interface ITokenKitWrapper {
     sepoliaEndpoint: string
     themeObject: Theme
     options?: TokenKitOptions
+    /** Optional origin header sent with API requests (e.g., 'chrome-extension://my-wallet') */
+    origin?: string
 }
 
 export interface ITokenkitProvider {
@@ -78,6 +82,8 @@ export interface ITokenkitProvider {
     mainnetEndpoint: string | null
     sepoliaEndpoint: string | null
     options?: TokenKitOptions
+    /** Optional origin header sent with API requests */
+    origin?: string | null
 }
 
 

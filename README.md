@@ -14,7 +14,7 @@ Also you can add your own token by visiting the landing page: [Tokenkit](https:/
 ## Setup
 
 
-Learn more about complete setup [here](https://docs.tokenkithq.io/docs/tokenkit-sdk/installation)
+Learn more about complete setup [here](https://docs.tokenkithq.io/docs/sdk/installation)
 
 
 ## To build use

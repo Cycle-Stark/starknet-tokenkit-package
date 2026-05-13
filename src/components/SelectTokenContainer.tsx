@@ -26,26 +26,42 @@ const SelectContainer = styled.div<{ height?: string, width?: string }>`
   font-family: ${({ theme }) => theme.fonts.fontFamily || `"Geist", "Inter", sans-serif`};
   border: 1px solid ${({ theme }) => theme.colors.searchBorderColor}20;
   outline: none;
+
+  input, button, select, textarea {
+    font-family: inherit;
+  }
+
+  @media (max-width: 480px) {
+    max-width: 100%;
+    width: 100%;
+    border-radius: ${({ theme }) => `${Math.min(theme.borderRadius, 14)}px`};
+  }
 `;
 
 const ModalHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* padding: 16px; */
   border-bottom: 1px solid ${({ theme }) => theme.colors.headerFooterBg};
-  height: 60px;
+  height: 52px;
   overflow: hidden;
   background-color: ${({ theme }) => theme.colors.headerFooterBg};
   margin: 0;
-  padding: 16px;
+  padding: 12px 14px;
   box-sizing: border-box;
+
+  @media (max-width: 480px) {
+    height: 48px;
+    padding: 10px 12px;
+  }
 `;
 
 const ModalTitle = styled.h3`
   margin: 0;
   padding: 0;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   box-sizing: border-box;
   color: ${({ theme }) => theme.colors.textColor};
 `;
@@ -53,9 +69,13 @@ const ModalTitle = styled.h3`
 const ModalSubTitle = styled.h4`
   margin: 0;
   padding: 0;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
   box-sizing: border-box;
   color: ${({ theme }) => theme.colors.textColor};
+  opacity: 0.5;
 `;
 
 const CloseButton = styled.button`
@@ -66,52 +86,71 @@ const CloseButton = styled.button`
   padding: 0;
   height: 20px;
   width: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+
+  &:hover {
+    opacity: 1;
+  }
 `;
 
 const ModalBody = styled.div`
   margin: 0;
   padding: 0;
-  height: calc(100% - 60px);
+  height: calc(100% - 52px);
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+
+  @media (max-width: 480px) {
+    height: calc(100% - 48px);
+  }
 `;
 
 const SearchInputContainer = styled.div`
-    height: 60px;
+    height: 52px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px;
+    padding: 10px 14px;
     box-sizing: border-box;
     margin: 0;
     background: transparent;
+
+    @media (max-width: 480px) {
+      height: 48px;
+      padding: 8px 12px;
+    }
 `
 
-const SearchInputGroup = styled.div` 
-    width: 100%;   
+const SearchInputGroup = styled.div`
+    width: 100%;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     padding: 0 10px;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     background: ${({ theme }) => theme.colors.searchBackground};
-    border: 2px solid ${({ theme }) => theme.colors.searchBorderColor};
+    border: 1.5px solid ${({ theme }) => theme.colors.searchBorderColor};
     border-radius: 50px;
+    transition: border-color 0.15s ease;
     &:focus-within {
         outline: none;
-        border: 2px solid ${({ theme }) => theme.colors.searchFocusBorderColor};
+        border-color: ${({ theme }) => theme.colors.searchFocusBorderColor};
     }
 `
 
 const SearchInput = styled.input`
-  padding: 10px;
+  padding: 8px 2px;
   border: none;
-  margin-bottom: 16px;
   background: transparent;
   flex: 1;
+  font-size: 13px;
   color: ${({ theme }) => theme.colors.searchColor};
   margin: 0;
   box-sizing: border-box;
@@ -130,19 +169,23 @@ const SearchInput = styled.input`
 const CommonTokens = styled.div`
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
     margin: 0;
-    padding: 8px 16px 4px;
+    padding: 4px 14px 2px;
     box-sizing: border-box;
     overflow: hidden;
+
+    @media (max-width: 480px) {
+      padding: 2px 12px 0;
+    }
 `;
 
 const CommonTokensList = styled.div`
     width: 100%;
     display: flex;
-    gap: 4px;
+    gap: 2px;
     margin: 0;
-    padding: 4px 0 8px;
+    padding: 2px 0 6px;
     box-sizing: border-box;
     overflow-y: hidden;
     overflow-x: auto;
@@ -168,8 +211,12 @@ const CommonTokensList = styled.div`
 const Divider = styled.div`
     height: 1px;
     background: ${({ theme }) => theme.colors.searchBorderColor};
-    margin: 0 16px;
-    opacity: 0.3;
+    margin: 4px 14px 2px;
+    opacity: 0.25;
+
+    @media (max-width: 480px) {
+      margin: 2px 12px 0;
+    }
 `;
 
 const TokenListContainer = styled.div`
@@ -178,9 +225,13 @@ const TokenListContainer = styled.div`
     overflow-y: overlay;
     overflow-x: hidden;
     margin: 0;
-    padding: 8px 12px;
+    padding: 4px 10px 6px;
     box-sizing: border-box;
     scrollbar-gutter: stable;
+
+    @media (max-width: 480px) {
+      padding: 4px 8px 6px;
+    }
 
     &::-webkit-scrollbar {
         width: 4px;
@@ -204,9 +255,9 @@ const Paragraph = styled.p`
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: 12px;
   color: ${({ theme }) => theme.colors.textColor};
-  opacity: 0.9;
+  opacity: 0.7;
 `;
 
 const TokensNotFound = styled.p`
@@ -222,7 +273,8 @@ const Anchor = styled.a`
     color: ${({ theme }) => theme.colors.primaryColor};
     margin: 0;
     padding: 0;
-    font-size: 14px;
+    font-size: 12px;
+    font-weight: 500;
     box-sizing: border-box;
     text-decoration: none;
 
@@ -236,14 +288,14 @@ const SectionLabelRow = styled.div`
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 8px 12px 4px;
+    padding: 6px 8px 2px;
 `;
 
 const SectionLabel = styled.span`
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 600;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.06em;
     color: ${({ theme }) => theme.colors.textColor};
     opacity: 0.45;
 `;
@@ -252,8 +304,9 @@ const ClearAllButton = styled.button`
     background: transparent;
     border: none;
     cursor: pointer;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
+    letter-spacing: 0.02em;
     color: ${({ theme }) => theme.colors.primaryColor};
     opacity: 0.7;
     padding: 0;
@@ -287,23 +340,28 @@ const Spinner = styled.div`
 `;
 
 const TokenContainerFooter = styled.div`
-    height: 60px;
+    height: 48px;
     margin: 0;
-    padding: 16px;
+    padding: 10px 14px;
     box-sizing: border-box;
     background-color: ${({ theme }) => theme.colors.headerFooterBg};
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
     gap: 6px;
+
+    @media (max-width: 480px) {
+      height: 44px;
+      padding: 8px 12px;
+    }
 `;
 
 const PAGE_SIZE = 50;
 
 const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) => {
     const { selectedToken, callBackFunc, closeModal } = props;
-    const { network, apiKey, mainnetEndpoint, sepoliaEndpoint, options } = useTokenKitContext();
+    const { network, apiKey, mainnetEndpoint, sepoliaEndpoint, options, origin } = useTokenKitContext();
     const [searchedToken, setSearchedToken] = useState('');
     const debouncedValue = useDebounce(searchedToken, 400);
     const [commonTokens, setCommonTokens] = useState<IToken[]>([]);
@@ -312,7 +370,10 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
 
     const [hasLoadedCommonTokens, setHasLoadedCommonTokens] = useState(false);
     const tokensToLoad = options?.tokensToLoad ?? 'public';
-    const [recentTokens, setRecentTokens] = useState<IToken[]>(() => getRecentTokens());
+    const enableRecent = options?.enableRecent ?? false;
+    const [recentTokens, setRecentTokens] = useState<IToken[]>(
+        () => (enableRecent && network) ? getRecentTokens(network) : []
+    );
 
     // Infinite scroll state
     const [nextPageUrl, setNextPageUrl] = useState<string | null>(null);
@@ -331,22 +392,28 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
     };
 
     const selectToken = (token: IToken) => {
-        saveRecentToken(token);
-        setRecentTokens(getRecentTokens());
+        if (enableRecent && network) {
+            saveRecentToken(network, token);
+            setRecentTokens(getRecentTokens(network));
+        }
         setSearchedToken('');
         callBackFunc?.(token);
         closeModal?.();
     };
 
     const handleRemoveRecent = useCallback((address: string) => {
-        removeRecentToken(address);
-        setRecentTokens(getRecentTokens());
-    }, []);
+        if (enableRecent && network) {
+            removeRecentToken(network, address);
+            setRecentTokens(getRecentTokens(network));
+        }
+    }, [enableRecent, network]);
 
     const handleClearAllRecent = useCallback(() => {
-        clearAllRecentTokens();
+        if (enableRecent && network) {
+            clearAllRecentTokens(network);
+        }
         setRecentTokens([]);
-    }, []);
+    }, [enableRecent, network]);
 
     const fetchTokens = useCallback(async (url: string, headers: Record<string, string>) => {
         const response = await fetch(url, { method: 'GET', headers });
@@ -366,13 +433,16 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
             const baseUrl = endpoint.startsWith('http') ? endpoint : `https://${endpoint}`;
             const publicParam = tokensToLoad === 'all' ? '' : '&public=true';
             const url = `${baseUrl}/api/tokens/?is_erc20=true&common=true&limit=1000&fields=address,symbol,name,decimals,common,verified,logo${publicParam}`;
-            const data = await fetchTokens(url, { 'api-key': apiKey, 'Content-Type': 'application/json' });
+            const headers: Record<string, string> = { 'api-key': apiKey, 'Content-Type': 'application/json' };
+            if (origin) headers['X-Origin'] = origin;
+            const data = await fetchTokens(url, headers);
             setCommonTokens(data?.results ?? []);
             setHasLoadedCommonTokens(true);
         } catch (error: any) {
             console.error("Error loading common tokens:", error.message);
+            setHasLoadedCommonTokens(true);
         }
-    }, [hasLoadedCommonTokens, network, apiKey, mainnetEndpoint, sepoliaEndpoint, tokensToLoad]);
+    }, [hasLoadedCommonTokens, network, apiKey, mainnetEndpoint, sepoliaEndpoint, tokensToLoad, origin]);
 
     // Load a page of all tokens (initial or next)
     const loadTokenPage = useCallback(async (pageUrl?: string) => {
@@ -382,7 +452,8 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
                 throw new Error('Network, API key, or endpoint is not set.');
             }
 
-            const headers = { 'api-key': apiKey, 'Content-Type': 'application/json' };
+            const headers: Record<string, string> = { 'api-key': apiKey, 'Content-Type': 'application/json' };
+            if (origin) headers['X-Origin'] = origin;
 
             let url: string;
             if (pageUrl) {
@@ -417,7 +488,7 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
             }
             setErrorMessage(`Failed to load tokens: ${error.message}`);
         }
-    }, [network, apiKey, mainnetEndpoint, sepoliaEndpoint, debouncedValue, fetchTokens, tokensToLoad]);
+    }, [network, apiKey, mainnetEndpoint, sepoliaEndpoint, debouncedValue, fetchTokens, tokensToLoad, origin]);
 
     // Load next page (called by intersection observer)
     const loadNextPage = useCallback(async () => {
@@ -443,6 +514,15 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
         setIsLoadingInitial(true);
         initialLoadTriggered.current = false;
     }, [tokensToLoad]);
+
+    // Reload recent tokens when network or opt-in flag changes
+    useEffect(() => {
+        if (enableRecent && network) {
+            setRecentTokens(getRecentTokens(network));
+        } else {
+            setRecentTokens([]);
+        }
+    }, [enableRecent, network]);
 
     // Reset and load first page when search changes
     useEffect(() => {
@@ -583,7 +663,7 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
                         Array(10).fill(null).map((_, i) => <TokenListItemSkeleton key={i} index={i} />)
                     ) : (
                         <>
-                            {recentTokens.length > 0 && !debouncedValue && (
+                            {enableRecent && recentTokens.length > 0 && !debouncedValue && (
                                 <>
                                     <SectionLabelRow>
                                         <SectionLabel>Recent</SectionLabel>

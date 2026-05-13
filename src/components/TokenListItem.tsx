@@ -1,13 +1,13 @@
 import styled from 'styled-components';
 import { IToken } from '../types';
-import { limitChars } from '../utils';
+import TokenLogo from './TokenLogo';
 
 const TokenListItemContainer = styled.div<{ isselected: boolean; isfocused?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border-radius: ${({ theme }) => `${Math.min(theme.borderRadius, 12)}px`};
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: ${({ theme }) => `${Math.min(theme.borderRadius, 10)}px`};
   cursor: pointer;
   transition: background 0.15s ease;
   background: ${({ isselected, isfocused, theme }) =>
@@ -20,25 +20,11 @@ const TokenListItemContainer = styled.div<{ isselected: boolean; isfocused?: boo
   &:hover {
     background: ${({ theme }) => theme.colors.headerFooterBg};
   }
-`;
 
-const LogoHolder = styled.div`
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.colors.headerFooterBg};
-  overflow: hidden;
-`;
-
-const LogoImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border: none;
+  @media (max-width: 480px) {
+    gap: 8px;
+    padding: 6px 8px;
+  }
 `;
 
 const TokenContent = styled.div`
@@ -59,8 +45,9 @@ const TokenNamePrimary = styled.p`
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
+  letter-spacing: -0.005em;
   color: ${({ theme }) => theme.colors.textColor};
   white-space: nowrap;
   overflow: hidden;
@@ -155,18 +142,7 @@ const TokenListItem = ({ token, select, selectedToken, isFocused, onRemove }: IS
       isfocused={isFocused}
       onClick={selectToken}
     >
-      <LogoHolder>
-        {!token.logo ? (
-          <TokenNamePrimary style={{ textTransform: 'uppercase', fontSize: '13px', fontWeight: 600 }}>
-            {limitChars(token?.symbol, 2, false)}
-          </TokenNamePrimary>
-        ) : (
-          <LogoImage
-            src={token.logo}
-            alt={token.symbol}
-          />
-        )}
-      </LogoHolder>
+      <TokenLogo logo={token.logo} symbol={token.symbol} size={32} />
       <TokenContent>
         <NameRow>
           <TokenNamePrimary>{token?.name}</TokenNamePrimary>
@@ -174,8 +150,8 @@ const TokenListItem = ({ token, select, selectedToken, isFocused, onRemove }: IS
             <img
               src={getBadgeUrl()?.badge}
               title={getBadgeUrl()?.msg}
-              height="14px"
-              width="14px"
+              height="12px"
+              width="12px"
             />
           )}
         </NameRow>

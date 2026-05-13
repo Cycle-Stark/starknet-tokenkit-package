@@ -21,14 +21,19 @@ const SkeletonPulse = styled.div`
 const Container = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 10px;
+  padding: 7px 10px;
+
+  @media (max-width: 480px) {
+    gap: 8px;
+    padding: 6px 8px;
+  }
 `;
 
 const Circle = styled(SkeletonPulse)`
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
   border-radius: 50%;
 `;
 
@@ -36,12 +41,12 @@ const Content = styled.div`
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 `;
 
 const NameBar = styled(SkeletonPulse)<{ width?: string }>`
   width: ${({ width }) => width || '120px'};
-  height: 12px;
+  height: 11px;
   border-radius: 4px;
 `;
 
@@ -53,7 +58,7 @@ const MetaRow = styled.div`
 
 const MetaBar = styled(SkeletonPulse)<{ width?: string }>`
   width: ${({ width }) => width || '50px'};
-  height: 10px;
+  height: 9px;
   border-radius: 4px;
 `;
 
