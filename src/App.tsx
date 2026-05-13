@@ -91,29 +91,29 @@ const ThemeGrid = styled.div`
   gap: 8px;
 `;
 
-const ThemeCard = styled.button<{ bg: string; isActive: boolean }>`
+const ThemeCard = styled.button<{ $isActive: boolean }>`
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
   border-radius: 10px;
-  border: 2px solid ${({ isActive }) => isActive ? '#6366f1' : '#2a2a35'};
-  background: ${({ isActive }) => isActive ? '#1e1e2e' : '#1a1a24'};
+  border: 2px solid ${({ $isActive }) => $isActive ? '#6366f1' : '#2a2a35'};
+  background: ${({ $isActive }) => $isActive ? '#1e1e2e' : '#1a1a24'};
   cursor: pointer;
   transition: all 0.15s ease;
   text-align: left;
 
   &:hover {
-    border-color: ${({ isActive }) => isActive ? '#6366f1' : '#444'};
+    border-color: ${({ $isActive }) => $isActive ? '#6366f1' : '#444'};
     background: #1e1e2e;
   }
 `;
 
-const ThemeSwatch = styled.div<{ bg: string }>`
+const ThemeSwatch = styled.div<{ $bg: string }>`
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: ${({ bg }) => bg};
+  background: ${({ $bg }) => $bg};
   border: 1px solid rgba(255,255,255,0.1);
   flex-shrink: 0;
 `;
@@ -211,13 +211,13 @@ const ActionBar = styled.div`
   margin-top: 8px;
 `;
 
-const ActionButton = styled.button<{ variant?: 'primary' | 'default' }>`
+const ActionButton = styled.button<{ $variant?: 'primary' | 'default' }>`
   flex: 1;
   padding: 8px 12px;
   border-radius: 8px;
-  border: 1px solid ${({ variant }) => variant === 'primary' ? '#6366f1' : '#333'};
-  background: ${({ variant }) => variant === 'primary' ? '#6366f1' : '#1a1a24'};
-  color: ${({ variant }) => variant === 'primary' ? '#fff' : '#ccc'};
+  border: 1px solid ${({ $variant }) => $variant === 'primary' ? '#6366f1' : '#333'};
+  background: ${({ $variant }) => $variant === 'primary' ? '#6366f1' : '#1a1a24'};
+  color: ${({ $variant }) => $variant === 'primary' ? '#fff' : '#ccc'};
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -225,7 +225,7 @@ const ActionButton = styled.button<{ variant?: 'primary' | 'default' }>`
   font-family: inherit;
 
   &:hover {
-    background: ${({ variant }) => variant === 'primary' ? '#5558e6' : '#222'};
+    background: ${({ $variant }) => $variant === 'primary' ? '#5558e6' : '#222'};
   }
 
   &:active {
@@ -389,13 +389,13 @@ const TabBar = styled.div`
   margin-bottom: 12px;
 `;
 
-const Tab = styled.button<{ isActive: boolean }>`
+const Tab = styled.button<{ $isActive: boolean }>`
   flex: 1;
   padding: 7px 12px;
   border-radius: 6px;
   border: none;
-  background: ${({ isActive }) => isActive ? '#2a2a35' : 'transparent'};
-  color: ${({ isActive }) => isActive ? '#fff' : '#666'};
+  background: ${({ $isActive }) => $isActive ? '#2a2a35' : 'transparent'};
+  color: ${({ $isActive }) => $isActive ? '#fff' : '#666'};
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
@@ -434,12 +434,12 @@ const ToggleGroup = styled.div`
   border: 1px solid #2a2a35;
 `;
 
-const ToggleOption = styled.button<{ isActive: boolean }>`
+const ToggleOption = styled.button<{ $isActive: boolean }>`
   padding: 5px 12px;
   border-radius: 4px;
   border: none;
-  background: ${({ isActive }) => isActive ? '#6366f1' : 'transparent'};
-  color: ${({ isActive }) => isActive ? '#fff' : '#666'};
+  background: ${({ $isActive }) => $isActive ? '#6366f1' : 'transparent'};
+  color: ${({ $isActive }) => $isActive ? '#fff' : '#666'};
   font-size: 11px;
   font-weight: 500;
   cursor: pointer;
@@ -447,7 +447,7 @@ const ToggleOption = styled.button<{ isActive: boolean }>`
   font-family: inherit;
 
   &:hover {
-    color: ${({ isActive }) => isActive ? '#fff' : '#ccc'};
+    color: ${({ $isActive }) => $isActive ? '#fff' : '#ccc'};
   }
 `;
 
@@ -575,9 +575,9 @@ const App = () => {
 
           <SidebarSection style={{ paddingBottom: 8 }}>
             <TabBar>
-              <Tab isActive={sidebarTab === 'presets'} onClick={() => setSidebarTab('presets')}>Presets</Tab>
-              <Tab isActive={sidebarTab === 'custom'} onClick={() => setSidebarTab('custom')}>Custom</Tab>
-              <Tab isActive={sidebarTab === 'docs'} onClick={() => setSidebarTab('docs')}>Docs</Tab>
+              <Tab $isActive={sidebarTab === 'presets'} onClick={() => setSidebarTab('presets')}>Presets</Tab>
+              <Tab $isActive={sidebarTab === 'custom'} onClick={() => setSidebarTab('custom')}>Custom</Tab>
+              <Tab $isActive={sidebarTab === 'docs'} onClick={() => setSidebarTab('docs')}>Docs</Tab>
             </TabBar>
           </SidebarSection>
 
@@ -587,22 +587,22 @@ const App = () => {
             <OptionRow>
               <OptionLabel>Network</OptionLabel>
               <ToggleGroup>
-                <ToggleOption isActive={network === 'SN_MAIN'} onClick={() => setNetwork('SN_MAIN')}>Mainnet</ToggleOption>
-                <ToggleOption isActive={network === 'SN_SEPOLIA'} onClick={() => setNetwork('SN_SEPOLIA')}>Sepolia</ToggleOption>
+                <ToggleOption $isActive={network === 'SN_MAIN'} onClick={() => setNetwork('SN_MAIN')}>Mainnet</ToggleOption>
+                <ToggleOption $isActive={network === 'SN_SEPOLIA'} onClick={() => setNetwork('SN_SEPOLIA')}>Sepolia</ToggleOption>
               </ToggleGroup>
             </OptionRow>
             <OptionRow>
               <OptionLabel>Tokens to Load</OptionLabel>
               <ToggleGroup>
-                <ToggleOption isActive={tokensToLoad === 'public'} onClick={() => setTokensToLoad('public')}>Public</ToggleOption>
-                <ToggleOption isActive={tokensToLoad === 'all'} onClick={() => setTokensToLoad('all')}>All</ToggleOption>
+                <ToggleOption $isActive={tokensToLoad === 'public'} onClick={() => setTokensToLoad('public')}>Public</ToggleOption>
+                <ToggleOption $isActive={tokensToLoad === 'all'} onClick={() => setTokensToLoad('all')}>All</ToggleOption>
               </ToggleGroup>
             </OptionRow>
             <OptionRow>
               <OptionLabel>Recent History</OptionLabel>
               <ToggleGroup>
-                <ToggleOption isActive={!enableRecent} onClick={() => setEnableRecent(false)}>Off</ToggleOption>
-                <ToggleOption isActive={enableRecent} onClick={() => setEnableRecent(true)}>On</ToggleOption>
+                <ToggleOption $isActive={!enableRecent} onClick={() => setEnableRecent(false)}>Off</ToggleOption>
+                <ToggleOption $isActive={enableRecent} onClick={() => setEnableRecent(true)}>On</ToggleOption>
               </ToggleGroup>
             </OptionRow>
           </SidebarSection>
@@ -615,20 +615,18 @@ const App = () => {
                 {Object.entries(themes).map(([name, theme]) => (
                   <ThemeCard
                     key={name}
-                    bg={theme.colors.background}
-                    isActive={activeThemeName === name}
+                    $isActive={activeThemeName === name}
                     onClick={() => selectPreset(name)}
                   >
-                    <ThemeSwatch bg={theme.colors.background} />
+                    <ThemeSwatch $bg={theme.colors.background} />
                     <ThemeCardLabel>{name.charAt(0).toUpperCase() + name.slice(1)}</ThemeCardLabel>
                   </ThemeCard>
                 ))}
                 <ThemeCard
-                  bg={customTheme.colors.background}
-                  isActive={activeThemeName === '__custom__'}
+                  $isActive={activeThemeName === '__custom__'}
                   onClick={activateCustom}
                 >
-                  <ThemeSwatch bg={customTheme.colors.background} />
+                  <ThemeSwatch $bg={customTheme.colors.background} />
                   <ThemeCardLabel>Custom</ThemeCardLabel>
                 </ThemeCard>
               </ThemeGrid>
@@ -638,7 +636,7 @@ const App = () => {
                   {copied ? <CopiedBadge>Copied!</CopiedBadge> : 'Copy Theme'}
                 </ActionButton>
                 {activeThemeName !== '__custom__' && (
-                  <ActionButton variant="primary" onClick={() => loadPresetIntoCustom(activeThemeName)}>
+                  <ActionButton $variant="primary" onClick={() => loadPresetIntoCustom(activeThemeName)}>
                     Edit as Custom
                   </ActionButton>
                 )}
@@ -696,11 +694,10 @@ const App = () => {
                 {Object.entries(themes).map(([name, theme]) => (
                   <ThemeCard
                     key={name}
-                    bg={theme.colors.background}
-                    isActive={false}
+                    $isActive={false}
                     onClick={() => loadPresetIntoCustom(name)}
                   >
-                    <ThemeSwatch bg={theme.colors.background} />
+                    <ThemeSwatch $bg={theme.colors.background} />
                     <ThemeCardLabel>{name.charAt(0).toUpperCase() + name.slice(1)}</ThemeCardLabel>
                   </ThemeCard>
                 ))}
@@ -818,7 +815,7 @@ const myTheme: Theme = {
               <DocsList>
                 {Object.keys(themes).map(name => (
                   <DocItem key={name} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <ThemeSwatch bg={themes[name].colors.background} />
+                    <ThemeSwatch $bg={themes[name].colors.background} />
                     <div>
                       <DocProp>themes.{name}</DocProp>
                       <DocDesc style={{ margin: 0 }}>borderRadius: {themes[name].borderRadius}px</DocDesc>
