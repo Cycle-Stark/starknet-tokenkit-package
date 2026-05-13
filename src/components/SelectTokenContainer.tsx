@@ -385,13 +385,13 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
     const listContainerRef = useRef<HTMLDivElement | null>(null);
     const containerRef = useRef<HTMLDivElement | null>(null);
 
-    const getEndpoint = () => {
+    const getEndpoint = useCallback(() => {
         if (network === 'SN_MAIN') return mainnetEndpoint;
         if (network === 'SN_SEPOLIA') return sepoliaEndpoint;
         return null;
-    };
+    }, [network, mainnetEndpoint, sepoliaEndpoint]);
 
-    const selectToken = (token: IToken) => {
+    const selectToken = useCallback((token: IToken) => {
         if (enableRecent && network) {
             saveRecentToken(network, token);
             setRecentTokens(getRecentTokens(network));
@@ -399,7 +399,7 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
         setSearchedToken('');
         callBackFunc?.(token);
         closeModal?.();
-    };
+    }, [enableRecent, network, callBackFunc, closeModal]);
 
     const handleRemoveRecent = useCallback((address: string) => {
         if (enableRecent && network) {
@@ -438,11 +438,12 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
             const data = await fetchTokens(url, headers);
             setCommonTokens(data?.results ?? []);
             setHasLoadedCommonTokens(true);
-        } catch (error: any) {
-            console.error("Error loading common tokens:", error.message);
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            console.error("Error loading common tokens:", msg);
             setHasLoadedCommonTokens(true);
         }
-    }, [hasLoadedCommonTokens, network, apiKey, mainnetEndpoint, sepoliaEndpoint, tokensToLoad, origin]);
+    }, [hasLoadedCommonTokens, network, apiKey, getEndpoint, fetchTokens, tokensToLoad, origin]);
 
     // Load a page of all tokens (initial or next)
     const loadTokenPage = useCallback(async (pageUrl?: string) => {
@@ -480,15 +481,16 @@ const SelectTokenContainer = (props: IModalProps & { closeModal?: () => void }) 
 
             setNextPageUrl(nextUrl);
             setErrorMessage(null);
-        } catch (error: any) {
-            if (error.name === "TypeError" && error.message.includes("Failed to fetch")) {
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : String(error);
+            if (error instanceof TypeError && msg.includes("Failed to fetch")) {
                 console.error("Network error: Unable to reach API.");
             } else {
-                console.error("Error loading tokens:", error.message);
+                console.error("Error loading tokens:", msg);
             }
-            setErrorMessage(`Failed to load tokens: ${error.message}`);
+            setErrorMessage(`Failed to load tokens: ${msg}`);
         }
-    }, [network, apiKey, mainnetEndpoint, sepoliaEndpoint, debouncedValue, fetchTokens, tokensToLoad, origin]);
+    }, [network, apiKey, getEndpoint, debouncedValue, fetchTokens, tokensToLoad, origin]);
 
     // Load next page (called by intersection observer)
     const loadNextPage = useCallback(async () => {

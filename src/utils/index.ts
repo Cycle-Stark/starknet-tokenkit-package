@@ -20,12 +20,12 @@ export function bigintToLongAddress(bigintstr: string) {
         const hex_sentence = `0x` + bn.toString(16)
         return hex_sentence;
     }
-    catch (error) {
+    catch {
         return bigintstr
     }
 }
 
-export function convertToReadableTokens(tokens: any, decimals: number) {
+export function convertToReadableTokens(tokens: BigNumber.Value, decimals: number) {
     if (!tokens || !decimals) return ""
     return new BigNumber(tokens).dividedBy(10 ** decimals).toNumber().toFixed(6)
 }

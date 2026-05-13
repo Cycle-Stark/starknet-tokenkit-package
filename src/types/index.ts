@@ -31,7 +31,7 @@ export interface IToken {
     common?: boolean
 
     id?: number,
-    price?: any
+    price?: number | string | null
 }
 
 export interface ThemeColors {
@@ -90,7 +90,7 @@ export interface ITokenkitProvider {
 
 export interface ILoadTokenKit {
     children: ReactNode
-    select: any
+    select: (token: IToken) => void
     token: IToken | undefined | null
 }
 
