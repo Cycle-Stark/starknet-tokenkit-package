@@ -14,9 +14,9 @@
   ],
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/starknet-tokenkit.js",
-      "require": "./dist/starknet-tokenkit.cjs",
-      "types": "./dist/types/index.d.ts"
+      "require": "./dist/starknet-tokenkit.cjs"
     }
   },
   "sideEffects": false,
