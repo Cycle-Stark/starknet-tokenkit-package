@@ -28,3 +28,15 @@ export {
 export * from './types';
 // export { Types }
 export { themes }
+
+// Re-export utility helpers so SDK consumers can use the same
+// address / decimals / formatting primitives the picker uses internally.
+// (Documented in docs/sdk/v1/tokenkit-utils.mdx.)
+export {
+    bigintToLongAddress,
+    convertToReadableTokens,
+    formatNumberInternational,
+    limitChars,
+    removeTrailingZeros,
+    timeStampToDate,
+} from './utils';
