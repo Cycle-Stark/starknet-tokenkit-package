@@ -153,7 +153,39 @@ What you get back:
 
 It does not over-claim. A bare `u256_sub Overflow` is reported as an arithmetic panic in the function that failed ("The call to withdraw on 0x5e1f…5d6e failed: a number went below zero (u256_sub Overflow)."). It only becomes `insufficient_balance` with `confidence: 'likely'` when the failing frame is a known token's `transfer` / `transfer_from` / `burn`. An explicit reason such as `ERC20: insufficient balance` is `certain`.
 
-Options: `tokens` names token contracts, `abi` names custom entrypoints, `calls` lets you pass the calls you sent when the error carries no calldata.
+Options:
+- `tokens` names token contracts.
+- `abi` names custom entrypoints.
+- `calls` lets you pass the calls you sent when the error carries no calldata.
+- `account` is the user's address. A missing contract at that address becomes `account_not_deployed`.
+
+### Known error kinds
+
+Every kind the parser can report is exported as a constant, so you can branch on it without string literals. `errors` lists every kind detected, primary first.
+
+```ts
+import { parseStarknetError, StarknetErrors, STARKNET_ERROR_KINDS } from 'starknet-tokenkit';
+
+const e = parseStarknetError(err, { account: address });
+if (e.errors.includes(StarknetErrors.ACCOUNT_NOT_DEPLOYED)) showDeployPrompt();
+else if (e.kind === StarknetErrors.CONTRACT_NOT_FOUND) showWrongNetwork(e.failingContract);
+```
+
+| Constant | Meaning |
+|---|---|
+| `CONTRACT_NOT_FOUND` | No contract at the address on this network (RPC 20). `failingContract` names it. |
+| `ACCOUNT_NOT_DEPLOYED` | The missing contract is the sender or the `account` you passed. |
+| `ENTRYPOINT_NOT_FOUND`, `CLASS_HASH_NOT_FOUND`, `CLASS_ALREADY_DECLARED`, `COMPILED_CLASS_HASH_MISMATCH` | Node-level lookups and declares (21, 28, 51, 60). |
+| `INSUFFICIENT_BALANCE`, `INSUFFICIENT_ALLOWANCE` | Token reverts, or a `u256_sub Overflow` on a known token transfer (`likely`). |
+| `INSUFFICIENT_MAX_FEE`, `INSUFFICIENT_FEE_BALANCE`, `FEE_REJECTED`, `OUT_OF_GAS` | Fee problems (53, 54, account fee checks). |
+| `INVALID_SIGNATURE`, `INVALID_NONCE`, `VALIDATION_FAILURE`, `SESSION_ERROR` | Account validation (52, 55). |
+| `SLIPPAGE`, `DEADLINE_EXPIRED`, `ROUTE_UNAVAILABLE`, `LENDING_LIMIT` | DeFi reverts (AVNU, Ekubo, Vesu). |
+| `UNAUTHORIZED_CALLER`, `PAUSED`, `REENTRANCY`, `INVALID_ADDRESS` | Contract guards. |
+| `ARITHMETIC_OVERFLOW`, `DIVISION_BY_ZERO`, `UNWRAP_FAILED`, `INDEX_OUT_OF_BOUNDS` | Cairo core panics. |
+| `CONTRACT_ERROR` | A revert with a reason the parser does not interpret (shown as is). |
+| `USER_REJECTED`, `PERMISSION_DENIED` | Wallet answers (4001, 4100). |
+| `RATE_LIMITED`, `NETWORK` | Node or connection trouble. |
+| `UNKNOWN` | Not interpreted. The original message is kept. |
 
 ## Development
 

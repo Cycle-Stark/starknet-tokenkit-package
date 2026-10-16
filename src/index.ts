@@ -42,7 +42,7 @@ export {
 } from './utils';
 
 // Starknet error parsing: pure TS, React-free, tree-shakeable.
-export { parseStarknetError, formatStarknetError, selectorFromName } from './errors';
+export { parseStarknetError, formatStarknetError, selectorFromName, StarknetErrors, STARKNET_ERROR_KINDS } from './errors';
 export type {
     ParsedStarknetError,
     ParseStarknetErrorOptions,

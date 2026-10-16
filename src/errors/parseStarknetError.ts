@@ -19,6 +19,7 @@ import {
     type ReasonRule,
     type StarknetErrorKind,
 } from './classify';
+export { StarknetErrors, STARKNET_ERROR_KINDS } from './classify';
 import { makeEntrypointResolver } from './entrypoints';
 import {
     decodeExecuteCalldata,
@@ -49,8 +50,14 @@ export interface StarknetErrorFrame {
 }
 
 export interface ParsedStarknetError {
-    /** Primary classification. */
+    /** Primary classification. Compare with `StarknetErrors.*`. */
     kind: StarknetErrorKind;
+    /**
+     * Every kind detected, primary first. Several can apply (a sub-overflow on a
+     * token transfer is both `arithmetic_overflow` and `insufficient_balance`).
+     * Compare with `StarknetErrors.*`: `errors.includes(StarknetErrors.CONTRACT_NOT_FOUND)`.
+     */
+    errors: StarknetErrorKind[];
     title: string;
     /** Plain-English message. Names the failing function and contract when known. */
     message: string;
@@ -107,6 +114,27 @@ export interface ParseStarknetErrorOptions {
      * from the RpcError request params or the error message when present.
      */
     calls?: ReadonlyArray<{ contractAddress: string; entrypoint?: string; selector?: string }>;
+    /**
+     * The user's account address. A "contract not found" on this address means
+     * the account itself is not deployed yet, reported as `account_not_deployed`.
+     */
+    account?: string;
+}
+
+/** Placeholder text some nodes and libraries put where error data would be. */
+const EMPTY_DATA_RE = /^(?:undefined|null|\{\}|\[\]|""|'')$/i;
+
+/** The contract a node-level read was about (getClassAt, getNonce, call...). */
+function contractFromParams(params: unknown): string | undefined {
+    if (!params || typeof params !== 'object') return undefined;
+    const p = params as Record<string, unknown>;
+    const direct = p.contract_address;
+    if (typeof direct === 'string') return direct;
+    const req = p.request;
+    if (req && typeof req === 'object' && typeof (req as Record<string, unknown>).contract_address === 'string') {
+        return (req as Record<string, unknown>).contract_address as string;
+    }
+    return undefined;
 }
 
 // Generic wrappers that never explain a failure on their own.
@@ -180,7 +208,7 @@ export function parseStarknetError(err: unknown, opts: ParseStarknetErrorOptions
     for (const f of raw) for (const r of f.reasons) if (!isNoise(r) && !reasons.includes(r)) reasons.push(r);
     const isContractRevert = reasons.length > 0;
     if (reason === undefined && typeof err === 'string' && !/^RPC:/.test(err) && err.trim()) reason = err.trim();
-    if (reason === undefined && typeof info.data === 'string' && info.data.trim()) reason = info.data.trim();
+    if (reason === undefined && typeof info.data === 'string' && info.data.trim() && !EMPTY_DATA_RE.test(info.data.trim())) reason = info.data.trim();
 
     // 5. Which contract / function failed.
     const failingFrame = reasonIdx >= 0 ? frames[reasonIdx] : [...frames].reverse().find((f) => f.contract);
@@ -266,14 +294,19 @@ export function parseStarknetError(err: unknown, opts: ParseStarknetErrorOptions
         }
     }
 
-    // Account not deployed: contract-not-found pointing at the sender.
+    // Account not deployed: contract-not-found pointing at the sender or the user's account.
+    let missingContract: string | undefined;
     if (kind === 'contract_not_found' || /is not deployed/i.test(haystack)) {
         const frameContract = normalizeAddress(failingFrame?.contract);
         const named = /contract address (0x[0-9a-f]+)/i.exec(haystack)?.[1] ?? /(0x[0-9a-f]{40,64})[^\n]*is not deployed/i.exec(haystack)?.[1];
-        const missing = frameContract ?? normalizeAddress(named);
-        if (/account (?:is )?not deployed|undeployed account/.test(haystack) || (sender && (!missing || missing === sender))) {
+        const missing = frameContract ?? normalizeAddress(named) ?? normalizeAddress(contractFromParams(info.params));
+        missingContract = missing;
+        const account = normalizeAddress(opts.account);
+        const isAccount = (sender && (!missing || missing === sender)) || (account !== undefined && missing === account);
+        if (/account (?:is )?not deployed|undeployed account/.test(haystack) || isAccount) {
             if (kind === 'contract_not_found' || kind === 'unknown') kind = 'account_not_deployed';
         }
+        if (!failingContract && missing) failingContract = missing;
     }
     kinds.add(kind);
 
@@ -309,12 +342,19 @@ export function parseStarknetError(err: unknown, opts: ParseStarknetErrorOptions
     } else {
         const l = leadFor(kind, ctx);
         hint = l.hint;
+        if (kind === 'contract_not_found' && missingContract) {
+            const name = tokenMap.get(missingContract) ?? shortAddress(missingContract);
+            l.lead = `The contract ${name} does not exist on this network.`;
+        }
         const fromContract = isContractRevert && (reasonMatches.some((m) => m.rule.kind === kind) || kind === 'validation_failure');
         message = fromContract ? withCall(l.lead) : l.lead;
     }
 
+    const errors: StarknetErrorKind[] = [kind, ...[...kinds].filter((k) => k !== kind)];
+
     return {
         kind,
+        errors,
         title: TITLES[kind],
         message,
         ...(hint ? { hint } : {}),

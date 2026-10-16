@@ -56,6 +56,55 @@ export type StarknetErrorKind =
     | 'network'
     | 'unknown';
 
+/**
+ * Every error kind the parser can report, as constants to compare against:
+ *
+ *   const e = parseStarknetError(err)
+ *   if (e.errors.includes(StarknetErrors.CONTRACT_NOT_FOUND)) { ... }
+ *   if (e.kind === StarknetErrors.INSUFFICIENT_BALANCE) { ... }
+ *
+ * The values are the `kind` strings, so both styles work.
+ */
+export const StarknetErrors = {
+    INSUFFICIENT_BALANCE: 'insufficient_balance',
+    INSUFFICIENT_ALLOWANCE: 'insufficient_allowance',
+    SLIPPAGE: 'slippage',
+    DEADLINE_EXPIRED: 'deadline_expired',
+    SESSION_ERROR: 'session_error',
+    INVALID_SIGNATURE: 'invalid_signature',
+    INVALID_NONCE: 'invalid_nonce',
+    FEE_REJECTED: 'fee_rejected',
+    OUT_OF_GAS: 'out_of_gas',
+    UNAUTHORIZED_CALLER: 'unauthorized_caller',
+    PAUSED: 'paused',
+    REENTRANCY: 'reentrancy',
+    LENDING_LIMIT: 'lending_limit',
+    INVALID_ADDRESS: 'invalid_address',
+    ROUTE_UNAVAILABLE: 'route_unavailable',
+    ARITHMETIC_OVERFLOW: 'arithmetic_overflow',
+    DIVISION_BY_ZERO: 'division_by_zero',
+    UNWRAP_FAILED: 'unwrap_failed',
+    INDEX_OUT_OF_BOUNDS: 'index_out_of_bounds',
+    CONTRACT_ERROR: 'contract_error',
+    INSUFFICIENT_MAX_FEE: 'insufficient_max_fee',
+    INSUFFICIENT_FEE_BALANCE: 'insufficient_fee_balance',
+    CONTRACT_NOT_FOUND: 'contract_not_found',
+    ENTRYPOINT_NOT_FOUND: 'entrypoint_not_found',
+    CLASS_HASH_NOT_FOUND: 'class_hash_not_found',
+    CLASS_ALREADY_DECLARED: 'class_already_declared',
+    COMPILED_CLASS_HASH_MISMATCH: 'compiled_class_hash_mismatch',
+    VALIDATION_FAILURE: 'validation_failure',
+    ACCOUNT_NOT_DEPLOYED: 'account_not_deployed',
+    USER_REJECTED: 'user_rejected',
+    PERMISSION_DENIED: 'permission_denied',
+    RATE_LIMITED: 'rate_limited',
+    NETWORK: 'network',
+    UNKNOWN: 'unknown',
+} as const satisfies Record<string, StarknetErrorKind>;
+
+/** All kinds, for menus, docs or exhaustive switches. */
+export const STARKNET_ERROR_KINDS = Object.values(StarknetErrors) as StarknetErrorKind[];
+
 export const PANIC_KINDS: ReadonlySet<StarknetErrorKind> = new Set([
     'arithmetic_overflow',
     'division_by_zero',

@@ -1,4 +1,4 @@
-export { parseStarknetError, formatStarknetError } from './parseStarknetError';
+export { parseStarknetError, formatStarknetError, StarknetErrors, STARKNET_ERROR_KINDS } from './parseStarknetError';
 export type {
     ParsedStarknetError,
     ParseStarknetErrorOptions,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { hash, LibraryError, RpcError, shortString } from 'starknet';
 import { BUILTIN_ENTRYPOINT_NAMES, BUILTIN_SELECTOR_TABLE } from './entrypoints';
 import type { StarknetErrorKind } from './classify';
-import { formatStarknetError, parseStarknetError } from './parseStarknetError';
+import { formatStarknetError, parseStarknetError, StarknetErrors, STARKNET_ERROR_KINDS } from './parseStarknetError';
 import { selectorFromName } from './selector';
 
 const ETH = '0x49d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7';
@@ -382,5 +382,41 @@ describe('RPC, wallet and transport errors', () => {
     it('never emits em-dashes', () => {
         const samples: unknown[] = ['x', { code: 20 }, { code: 53 }, { code: 4001 }, 'Failed to fetch', nested(STRK, 'transfer', 'u256_sub Overflow'), ...REASON_FIXTURES.map(([, r]) => r)];
         for (const s of samples) expect(formatStarknetError(s, { tokens: TOKENS })).not.toMatch(/—/);
+    });
+});
+
+describe('error list and contract-not-found (Keon getClassAt)', () => {
+    const ACCOUNT = '0x2ebcf456f3eb71b5841eabf82b7417cf96a8aebc7b5a972b9c87f0fde43ae6a';
+    const text = `RPC: starknet_getClassAt with params {
+  "block_id": "latest",
+  "contract_address": "${ACCOUNT}"
+}
+
+      20: Contract not found: undefined`;
+
+    it('names the missing contract and ignores the "undefined" data', () => {
+        const p = parseStarknetError(new Error(text));
+        expect(p.kind).toBe(StarknetErrors.CONTRACT_NOT_FOUND);
+        expect(p.errors).toContain(StarknetErrors.CONTRACT_NOT_FOUND);
+        expect(p.reason).toBeUndefined();
+        expect(p.failingContract).toBe(ACCOUNT);
+        expect(p.message).toMatch(/^The contract 0x2ebc.*ae6a does not exist on this network\.$/);
+    });
+
+    it('reports account_not_deployed when the missing contract is the user account', () => {
+        const p = parseStarknetError(new Error(text), { account: ACCOUNT });
+        expect(p.kind).toBe(StarknetErrors.ACCOUNT_NOT_DEPLOYED);
+        expect(p.title).toBe('Account not deployed');
+    });
+
+    it('lists every detected kind, primary first, and keeps flags', () => {
+        const p = parseStarknetError('u256_sub Overflow', {
+            tokens: [{ address: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7', symbol: 'ETH' }],
+            calls: [{ contractAddress: '0x049d36570d4e46f48e99674bd3fcc84644ddd6b96f7c741b1562b82f9e004dc7', entrypoint: 'transfer' }],
+        });
+        expect(p.errors[0]).toBe(p.kind);
+        expect(new Set(p.errors).size).toBe(p.errors.length);
+        expect(p.isInsufficientBalance).toBe(p.errors.includes(StarknetErrors.INSUFFICIENT_BALANCE));
+        expect(STARKNET_ERROR_KINDS).toContain(p.kind);
     });
 });
