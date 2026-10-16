@@ -187,6 +187,256 @@ else if (e.kind === StarknetErrors.CONTRACT_NOT_FOUND) showWrongNetwork(e.failin
 | `RATE_LIMITED`, `NETWORK` | Node or connection trouble. |
 | `UNKNOWN` | Not interpreted. The original message is kept. |
 
+## Keon wallet
+
+`starknet-tokenkit/keon-wallet` connects dApps to Keon, a Starknet wallet for Chrome and Android. It replaces the old `@keon-wallet/sdk` package: change the import path, the API is the same.
+
+| Before | Now |
+|---|---|
+| `@keon-wallet/sdk` | `starknet-tokenkit/keon-wallet` |
+| `@keon-wallet/sdk/mobile` | `starknet-tokenkit/keon-wallet/mobile` |
+
+TypeScript SDK for integrating with **Keon Wallet** — a Starknet wallet available as a Chrome extension and mobile app (Android/iOS).
+
+- **Browser extension** — injected wallet detection (`window.starknet_keon`)
+- **Mobile** — WalletConnect v2 with automatic in-app browser detection
+- **StarknetKit** — works as a connector with StarknetKit
+
+### Installation
+
+The connector ships inside `starknet-tokenkit`, under its own entry points, so it never pulls in TokenKit's React UI:
+
+```bash
+# Browser extension (injected wallet)
+npm install starknet-tokenkit starknet
+
+# Mobile (WalletConnect v2 and StarknetKit)
+npm install starknet-tokenkit starknet starknetkit @walletconnect/sign-client
+```
+
+`starknet`, `starknetkit` and `@walletconnect/sign-client` are optional peer dependencies: the connector uses your app's copies, so the `Account` objects it returns come from the same `starknet` you use.
+
+### Quick Start — Browser Extension
+
+```typescript
+import { detectKeonWallet, connect, getAccount } from 'starknet-tokenkit/keon-wallet'
+
+// Wait for wallet to be available (handles extension injection timing)
+const wallet = await detectKeonWallet()
+
+// Connect to wallet (prompts user for approval)
+const { address, chainId } = await connect()
+console.log(`Connected: ${address} on ${chainId}`)
+
+// Get account for transactions
+const account = getAccount()
+
+// Execute a transaction
+const result = await account.execute({
+  contractAddress: '0x...',
+  entrypoint: 'transfer',
+  calldata: ['0x...', '100', '0'],
+})
+console.log(`Transaction hash: ${result.transaction_hash}`)
+```
+
+### Mobile — WalletConnect v2
+
+The mobile connector automatically detects if the dApp is running inside Keon Wallet's in-app browser (uses injected wallet) or externally (uses WalletConnect).
+
+```typescript
+import { KeonMobileConnector, isInKeonMobileBrowser } from 'starknet-tokenkit/keon-wallet/mobile'
+
+const connector = KeonMobileConnector.init({
+  options: {
+    dappName: 'My dApp',
+    url: window.location.hostname,
+    projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
+  },
+})
+
+// Use with StarknetKit
+import { connect } from 'starknetkit'
+
+const result = await connect({
+  connectors: [connector],
+  modalMode: 'alwaysAsk',
+})
+```
+
+#### Environment Detection
+
+| Environment | Connector Used | How it works |
+|---|---|---|
+| Inside Keon mobile browser | `InjectedConnector` | Reads `window.starknet_keon` directly |
+| External mobile browser | `KeonMobileBaseConnector` | WalletConnect v2 deep link to Keon app |
+| Desktop browser | `InjectedConnector` | Standard extension injection |
+
+### StarknetKit Integration
+
+Use Keon Wallet with StarknetKit's modal:
+
+```typescript
+import { connect } from 'starknetkit'
+import { InjectedConnector } from 'starknetkit/injected'
+import { KeonMobileConnector } from 'starknet-tokenkit/keon-wallet/mobile'
+
+const result = await connect({
+  connectors: [
+    // Extension connector
+    new InjectedConnector({
+      options: { id: 'keon', name: 'Keon Wallet' },
+    }),
+    // Mobile connector (WalletConnect)
+    KeonMobileConnector.init({
+      options: {
+        dappName: 'My dApp',
+        url: window.location.hostname,
+        projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
+      },
+    }),
+  ],
+  modalMode: 'alwaysAsk',
+})
+
+if (result.wallet) {
+  console.log('Connected:', result.wallet.account.address)
+}
+```
+
+### API Reference
+
+#### Detection
+
+| Function | Returns | Description |
+|---|---|---|
+| `isKeonWalletAvailable()` | `boolean` | Check if Keon Wallet extension is installed |
+| `detectKeonWallet(options?)` | `Promise<KeonWallet>` | Wait for wallet to be available (default 3s timeout) |
+| `getKeonWallet()` | `KeonWallet` | Get wallet instance, throws if not available |
+| `tryGetKeonWallet()` | `KeonWallet \| undefined` | Get wallet instance or undefined |
+
+#### Connection
+
+| Function | Returns | Description |
+|---|---|---|
+| `connect(options?)` | `Promise<ConnectionState>` | Connect and get `{ isConnected, address, chainId }` |
+| `disconnect()` | `void` | Clear local connection state |
+| `getConnectionState()` | `ConnectionState` | Get current state without prompting user |
+
+#### Account & Provider
+
+| Function | Returns | Description |
+|---|---|---|
+| `getAccount()` | `KeonAccount` | Get connected account for transactions |
+| `getProvider()` | `KeonProvider` | Get provider for read-only operations |
+| `getNetwork()` | `Promise<NetworkInfo>` | Get active network info (id, name, chainId, rpcUrl) |
+| `switchNetwork(chainId)` | `Promise<boolean>` | Request network switch |
+
+#### Events
+
+```typescript
+import { subscribe, subscribeAll } from 'starknet-tokenkit/keon-wallet'
+
+// Single event
+const unsub = subscribe('accountsChanged', (accounts) => {
+  console.log('Accounts:', accounts)
+})
+
+// Multiple events
+const unsub = subscribeAll({
+  accountsChanged: (accounts) => console.log('Accounts:', accounts),
+  chainChanged: (chainId) => console.log('Chain:', chainId),
+  disconnect: () => console.log('Disconnected'),
+})
+
+// Cleanup
+unsub()
+```
+
+| Event | Data | Description |
+|---|---|---|
+| `accountsChanged` | `string[]` | Account selection changed |
+| `networkChanged` | `string` | Network changed (chain ID) |
+| `chainChanged` | `string` | Alias for networkChanged |
+| `connect` | `{ chainId: string }` | Wallet connected |
+| `disconnect` | `void` | Wallet disconnected |
+
+### Error Handling
+
+```typescript
+import {
+  WalletNotFoundError,
+  WalletNotConnectedError,
+  UserRejectedError,
+  RequestTimeoutError,
+} from 'starknet-tokenkit/keon-wallet'
+
+try {
+  await connect()
+} catch (error) {
+  if (error instanceof WalletNotFoundError) {
+    console.log('Please install Keon Wallet')
+  } else if (error instanceof UserRejectedError) {
+    console.log('User rejected the connection')
+  } else if (error instanceof RequestTimeoutError) {
+    console.log('Request timed out')
+  }
+}
+```
+
+### React Example
+
+```tsx
+import { useState, useEffect } from 'react'
+import { detectKeonWallet, connect, subscribe, getAccount, type KeonWallet } from 'starknet-tokenkit/keon-wallet'
+
+function App() {
+  const [wallet, setWallet] = useState<KeonWallet | null>(null)
+  const [address, setAddress] = useState<string | null>(null)
+
+  useEffect(() => {
+    detectKeonWallet()
+      .then(setWallet)
+      .catch(() => console.log('Wallet not found'))
+  }, [])
+
+  useEffect(() => {
+    if (!wallet) return
+    return subscribe('accountsChanged', (accounts: string[]) => {
+      setAddress(accounts[0] || null)
+    })
+  }, [wallet])
+
+  const handleConnect = async () => {
+    const { address } = await connect()
+    setAddress(address)
+  }
+
+  const handleTransfer = async () => {
+    const account = getAccount()
+    await account.execute({
+      contractAddress: '0x...',
+      entrypoint: 'transfer',
+      calldata: ['0x...', '100', '0'],
+    })
+  }
+
+  return (
+    <div>
+      {!wallet && <p>Please install Keon Wallet</p>}
+      {wallet && !address && <button onClick={handleConnect}>Connect</button>}
+      {address && (
+        <>
+          <p>Connected: {address}</p>
+          <button onClick={handleTransfer}>Transfer</button>
+        </>
+      )}
+    </div>
+  )
+}
+```
+
+
 ## Development
 
 ```bash

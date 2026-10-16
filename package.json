@@ -1,8 +1,8 @@
 {
   "name": "starknet-tokenkit",
   "private": false,
-  "version": "3.2.0",
-  "description": "A package that provides quick access to tokens in a modal format or you can interact with the contract to read the different tokens using the contract address and the abi.",
+  "version": "3.3.0",
+  "description": "Starknet developer kit: token selection and pricing UI, a Starknet error parser, and the Keon wallet connector (starknet-tokenkit/keon-wallet).",
   "author": "Tokenkit",
   "license": "MIT",
   "type": "module",
@@ -17,12 +17,22 @@
       "types": "./dist/types/index.d.ts",
       "import": "./dist/starknet-tokenkit.js",
       "require": "./dist/starknet-tokenkit.cjs"
+    },
+    "./keon-wallet": {
+      "types": "./dist/types/keon-wallet/index.d.ts",
+      "import": "./dist/keon-wallet/index.js",
+      "require": "./dist/keon-wallet/index.cjs"
+    },
+    "./keon-wallet/mobile": {
+      "types": "./dist/types/keon-wallet/mobile/index.d.ts",
+      "import": "./dist/keon-wallet/mobile.js",
+      "require": "./dist/keon-wallet/mobile.cjs"
     }
   },
   "sideEffects": false,
   "scripts": {
     "dev": "vite",
-    "build:package": "rm -rf dist && tsc -b && vite build",
+    "build:package": "rm -rf dist && tsc -b && vite build && vite build --config vite.config.keon.ts",
     "lint": "eslint .",
     "preview": "vite preview",
     "build:pages": "vite build --config vite.config.pages.ts",
@@ -30,7 +40,9 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "bignumber.js": "^9.1.2"
+    "bignumber.js": "^9.1.2",
+    "eventemitter3": "^5.0.4",
+    "@starknet-io/types-js": "^0.7.10"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",
@@ -38,13 +50,16 @@
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",
     "@vitejs/plugin-react-swc": "^3.8.0",
+    "@walletconnect/sign-client": "^2.26.0",
+    "@walletconnect/types": "^2.26.0",
     "eslint": "^9.21.0",
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^15.15.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "starknet": "^7.6.4",
+    "starknet": "^8.9.2",
+    "starknetkit": "^3.4.3",
     "styled-components": "^6.1.15",
     "tsup": "^8.4.0",
     "typescript": "~5.7.2",
@@ -56,17 +71,44 @@
   "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "styled-components": "^6.1.15"
+    "styled-components": "^6.1.15",
+    "starknet": "^6.0.0 || ^7.0.0 || ^8.0.0",
+    "starknetkit": "^3.0.0",
+    "@walletconnect/sign-client": "^2.23.0"
   },
   "keywords": [
     "starknet",
     "tokens",
     "starknetkit",
     "tokenkit",
-    "token"
+    "token",
+    "keon",
+    "keon-wallet",
+    "walletconnect",
+    "wallet"
   ],
   "bugs": {
     "url": "https://github.com/Cycle-Stark/token-kit/issues"
   },
-  "homepage": "https://tokenkithq.io"
+  "homepage": "https://tokenkithq.io",
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
+    "react-dom": {
+      "optional": true
+    },
+    "styled-components": {
+      "optional": true
+    },
+    "starknet": {
+      "optional": true
+    },
+    "starknetkit": {
+      "optional": true
+    },
+    "@walletconnect/sign-client": {
+      "optional": true
+    }
+  }
 }
