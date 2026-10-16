@@ -26,7 +26,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "build:pages": "vite build --config vite.config.pages.ts",
-    "preview:pages": "vite preview --config vite.config.pages.ts"
+    "preview:pages": "vite preview --config vite.config.pages.ts",
+    "test": "vitest run"
   },
   "dependencies": {
     "bignumber.js": "^9.1.2"
@@ -43,12 +44,14 @@
     "globals": "^15.15.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "starknet": "^7.6.4",
     "styled-components": "^6.1.15",
     "tsup": "^8.4.0",
     "typescript": "~5.7.2",
     "typescript-eslint": "^8.24.1",
     "vite": "^6.2.0",
-    "vite-plugin-dts": "^4.5.3"
+    "vite-plugin-dts": "^4.5.3",
+    "vitest": "^3.2.7"
   },
   "peerDependencies": {
     "react": "^19.0.0",

@@ -40,3 +40,12 @@ export {
     removeTrailingZeros,
     timeStampToDate,
 } from './utils';
+
+// Starknet error parsing: pure TS, React-free, tree-shakeable.
+export { parseStarknetError, formatStarknetError, selectorFromName } from './errors';
+export type {
+    ParsedStarknetError,
+    ParseStarknetErrorOptions,
+    StarknetErrorFrame,
+    StarknetErrorKind,
+} from './errors';

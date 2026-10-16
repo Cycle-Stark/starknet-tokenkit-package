@@ -127,6 +127,25 @@ The `fonts.fontFamily` is honored across all elements (including native form con
 - `Enter` — select the focused token
 - `Esc` — close the modal
 
+## Starknet error messages
+
+`parseStarknetError` and `formatStarknetError` turn starknet.js `RpcError`s, wallet errors, raw JSON-RPC errors or plain strings into plain-English messages. They are pure TypeScript with no React or runtime dependencies, so they tree-shake out when unused.
+
+```ts
+import { parseStarknetError, formatStarknetError } from 'starknet-tokenkit';
+
+try {
+  await account.execute(calls);
+} catch (err) {
+  const parsed = parseStarknetError(err, { tokens }); // tokens: { address, symbol }[]
+  // parsed.kind === 'insufficient_balance'
+  // parsed.message === "You don't have enough ETH for this transfer."
+  toast(formatStarknetError(err, { tokens })); // message + hint
+}
+```
+
+Options: `tokens` names the failing token, `abi` names custom entrypoints, `calls` attributes an account `__execute__` failure to the right call when the error carries no calldata.
+
 ## Development
 
 ```bash
