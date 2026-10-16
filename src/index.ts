@@ -46,6 +46,7 @@ export { parseStarknetError, formatStarknetError, selectorFromName } from './err
 export type {
     ParsedStarknetError,
     ParseStarknetErrorOptions,
+    StarknetErrorConfidence,
     StarknetErrorFrame,
     StarknetErrorKind,
 } from './errors';

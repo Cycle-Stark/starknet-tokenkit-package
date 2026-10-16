@@ -129,7 +129,7 @@ The `fonts.fontFamily` is honored across all elements (including native form con
 
 ## Starknet error messages
 
-`parseStarknetError` and `formatStarknetError` turn starknet.js `RpcError`s, wallet errors, raw JSON-RPC errors or plain strings into plain-English messages. They are pure TypeScript with no React or runtime dependencies, so they tree-shake out when unused.
+`parseStarknetError` and `formatStarknetError` turn starknet.js `RpcError`s, wallet errors, raw JSON-RPC errors or plain strings into plain-English messages plus structured flags. They are pure TypeScript with no React or runtime dependencies, so they tree-shake out when unused.
 
 ```ts
 import { parseStarknetError, formatStarknetError } from 'starknet-tokenkit';
@@ -137,14 +137,23 @@ import { parseStarknetError, formatStarknetError } from 'starknet-tokenkit';
 try {
   await account.execute(calls);
 } catch (err) {
-  const parsed = parseStarknetError(err, { tokens }); // tokens: { address, symbol }[]
-  // parsed.kind === 'insufficient_balance'
-  // parsed.message === "You don't have enough ETH for this transfer."
-  toast(formatStarknetError(err, { tokens })); // message + hint
+  const e = parseStarknetError(err, { tokens, calls }); // tokens: { address, symbol }[]
+  if (e.isInsufficientBalance && e.confidence === 'certain') showTopUp(e.contractSymbol);
+  toast(formatStarknetError(err, { tokens, calls })); // message + hint
 }
 ```
 
-Options: `tokens` names the failing token, `abi` names custom entrypoints, `calls` attributes an account `__execute__` failure to the right call when the error carries no calldata.
+What you get back:
+
+- `kind`, `title`, `message`, `hint`, `retryable`, `code`
+- `confidence`: `'certain'` (explicit reason or RPC code), `'likely'` (inferred), `'unknown'` (reason shown as is)
+- `failingContract`, `failingEntrypoint`, `contractSymbol`: the function that actually failed. An Argent multicall failure is resolved to the failing call through its call index.
+- `reason` (innermost, raw), `reasons` (every meaningful reason across frames), `frames`
+- Flags, several of which can be true at once: `isInsufficientBalance`, `isInsufficientAllowance`, `isInsufficientFee`, `isSlippage`, `isSignature`, `isNonce`, `isUserRejected`, `isPermissionDenied`, `isNetwork`, `isContractPanic`, `isContractRevert`
+
+It does not over-claim. A bare `u256_sub Overflow` is reported as an arithmetic panic in the function that failed ("The call to withdraw on 0x5e1f…5d6e failed: a number went below zero (u256_sub Overflow)."). It only becomes `insufficient_balance` with `confidence: 'likely'` when the failing frame is a known token's `transfer` / `transfer_from` / `burn`. An explicit reason such as `ERC20: insufficient balance` is `certain`.
+
+Options: `tokens` names token contracts, `abi` names custom entrypoints, `calls` lets you pass the calls you sent when the error carries no calldata.
 
 ## Development
 
