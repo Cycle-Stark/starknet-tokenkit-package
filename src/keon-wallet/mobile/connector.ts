@@ -131,8 +131,9 @@ export class KeonMobileBaseConnector extends EventEmitter<ConnectorEvents> {
 
     console.log('[KeonMobile] SignClient initialized, creating pairing...')
 
+    // optionalNamespaces: WalletConnect deprecated requiredNamespaces.
     const { uri, approval } = await this._client.connect({
-      requiredNamespaces: {
+      optionalNamespaces: {
         starknet: {
           chains: STARKNET_CHAINS,
           methods: STARKNET_METHODS,
@@ -171,6 +172,7 @@ export class KeonMobileBaseConnector extends EventEmitter<ConnectorEvents> {
       session: this._session,
       chainId: this._chainId,
       address: this._address!,
+      onWakeWallet: this._options.onWakeWallet,
     })
 
     // Listen for networkChanged events to update chainId

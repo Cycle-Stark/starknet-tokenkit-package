@@ -9,6 +9,7 @@
 import type SignClient from '@walletconnect/sign-client'
 import type { SessionTypes } from '@walletconnect/types'
 import type { StarknetWindowObject } from '@starknet-io/types-js'
+import { getWakeLink, keonPlatform } from './links'
 
 // Map wallet-api method names to WC method names
 const METHOD_MAP: Record<string, string> = {
@@ -25,12 +26,25 @@ export interface WCAdapterOptions {
   session: SessionTypes.Struct
   chainId: string
   address: string
+  /** See KeonMobileConnectorOptions.onWakeWallet. */
+  onWakeWallet?: (link: string) => void
 }
+
+/** Requests the user approves in Keon: on a phone, Keon has to be brought forward for them. */
+const NEEDS_APPROVAL = new Set([
+  'starknet_requestAddInvokeTransaction',
+  'starknet_signTypedData',
+  'starknet_requestAddDeclareTransaction',
+  'starknet_requestAddDeployAccountTransaction',
+  'starknet_declareIfNot',
+  'starknet_deployContract',
+  'wallet_switchStarknetChain',
+])
 
 type EventCallback = (...args: unknown[]) => void
 
 export function createWCStarknetWindowObject(opts: WCAdapterOptions): StarknetWindowObject {
-  const { client, session, chainId, address } = opts
+  const { client, session, chainId, address, onWakeWallet } = opts
   const listeners = new Map<string, Set<EventCallback>>()
 
   // Listen for WC session events and forward them
@@ -72,7 +86,7 @@ export function createWCStarknetWindowObject(opts: WCAdapterOptions): StarknetWi
       }
 
       // Forward to wallet via WC
-      return client.request({
+      const pending = client.request({
         topic: session.topic,
         chainId: wcChainId,
         request: {
@@ -80,6 +94,11 @@ export function createWCStarknetWindowObject(opts: WCAdapterOptions): StarknetWi
           params: call.params ?? {},
         },
       })
+      // On a phone, offer the link that brings Keon forward to approve it.
+      if (onWakeWallet && NEEDS_APPROVAL.has(wcMethod) && keonPlatform() !== 'desktop') {
+        try { onWakeWallet(getWakeLink(session.topic)) } catch { /* not a valid topic: no link */ }
+      }
+      return pending
     }) as StarknetWindowObject['request'],
 
     on: ((event: string, handler: EventCallback) => {

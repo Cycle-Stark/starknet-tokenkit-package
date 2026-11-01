@@ -304,6 +304,13 @@ export interface KeonMobileConnectorOptions {
    * Use this to display a QR code or provide a copy-paste URI to the user.
    */
   onDisplayUri?: (uri: string) => void
+  /**
+   * Called after each request that needs the user's approval (send, sign,
+   * declare, deploy, switch network) is sent to Keon, with a link that brings
+   * Keon forward. Browsers only follow links from a tap: show it as an
+   * "Open Keon" button. Mobile only; never called on desktop.
+   */
+  onWakeWallet?: (link: string) => void
 }
 
 /**
