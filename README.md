@@ -290,7 +290,11 @@ const connector = KeonMobileConnector.init({
     dappName: 'My dApp',
     url: window.location.hostname,
     projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
-    onWakeWallet: (href) => showOpenKeonButton(href), // same as getWakeLink(session.topic)
+    // Every request on a phone, reads included: Keon answers only while it's running.
+    onWakeWallet: (href, settled) => {
+      showOpenKeonButton(href) // same as getWakeLink(session.topic)
+      settled.then(hideOpenKeonButtonIfNoneLeft)
+    },
   },
 })
 ```

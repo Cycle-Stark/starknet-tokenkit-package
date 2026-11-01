@@ -305,12 +305,14 @@ export interface KeonMobileConnectorOptions {
    */
   onDisplayUri?: (uri: string) => void
   /**
-   * Called after each request that needs the user's approval (send, sign,
-   * declare, deploy, switch network) is sent to Keon, with a link that brings
-   * Keon forward. Browsers only follow links from a tap: show it as an
-   * "Open Keon" button. Mobile only; never called on desktop.
+   * Called after each request sent to Keon on a phone, with a link that
+   * brings Keon forward and a promise that settles when Keon answers. Keon
+   * only answers while it's running (the phone freezes it in the background),
+   * so reads need it too. Browsers only follow links from a tap: show one
+   * "Open Keon" button until every `settled` promise has settled. Mobile only;
+   * never called on desktop.
    */
-  onWakeWallet?: (link: string) => void
+  onWakeWallet?: (link: string, settled: Promise<unknown>) => void
 }
 
 /**

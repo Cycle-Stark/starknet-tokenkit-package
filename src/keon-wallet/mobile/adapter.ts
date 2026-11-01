@@ -27,19 +27,9 @@ export interface WCAdapterOptions {
   chainId: string
   address: string
   /** See KeonMobileConnectorOptions.onWakeWallet. */
-  onWakeWallet?: (link: string) => void
+  onWakeWallet?: (link: string, settled: Promise<unknown>) => void
 }
 
-/** Requests the user approves in Keon: on a phone, Keon has to be brought forward for them. */
-const NEEDS_APPROVAL = new Set([
-  'starknet_requestAddInvokeTransaction',
-  'starknet_signTypedData',
-  'starknet_requestAddDeclareTransaction',
-  'starknet_requestAddDeployAccountTransaction',
-  'starknet_declareIfNot',
-  'starknet_deployContract',
-  'wallet_switchStarknetChain',
-])
 
 type EventCallback = (...args: unknown[]) => void
 
@@ -94,9 +84,11 @@ export function createWCStarknetWindowObject(opts: WCAdapterOptions): StarknetWi
           params: call.params ?? {},
         },
       })
-      // On a phone, offer the link that brings Keon forward to approve it.
-      if (onWakeWallet && NEEDS_APPROVAL.has(wcMethod) && keonPlatform() !== 'desktop') {
-        try { onWakeWallet(getWakeLink(session.topic)) } catch { /* not a valid topic: no link */ }
+      // On a phone, Keon answers only while it's running (the OS freezes it in
+      // the background), reads included: offer the link that brings it forward
+      // until the request settles.
+      if (onWakeWallet && keonPlatform() !== 'desktop') {
+        try { onWakeWallet(getWakeLink(session.topic), pending.then(() => undefined, () => undefined)) } catch { /* not a valid topic: no link */ }
       }
       return pending
     }) as StarknetWindowObject['request'],
