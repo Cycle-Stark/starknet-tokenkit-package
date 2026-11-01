@@ -272,6 +272,31 @@ const result = await connect({
 | External mobile browser | `KeonMobileBaseConnector` | WalletConnect v2 deep link to Keon app |
 | Desktop browser | `InjectedConnector` | Standard extension injection |
 
+#### Opening Keon from the phone's browser
+
+Browsers only follow app links from a tap, so show these as buttons.
+
+```typescript
+import { getDeepLink, getWakeLink } from 'starknet-tokenkit/keon-wallet/mobile'
+
+// Connect: `uri` is the WalletConnect pairing URI.
+const link = getDeepLink(uri)
+// link.kind: 'intent' (Android Chrome), 'app_link' (other mobile browsers), 'qr' (desktop: show a QR of `uri`)
+openButton.href = link.href
+
+// Requests: bring Keon forward for a request already sent on the session.
+const connector = KeonMobileConnector.init({
+  options: {
+    dappName: 'My dApp',
+    url: window.location.hostname,
+    projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
+    onWakeWallet: (href) => showOpenKeonButton(href), // same as getWakeLink(session.topic)
+  },
+})
+```
+
+Pair links carry the pairing key, so they only go to Keon's verified App Link (`https://keon.tokenkithq.io/wc`) or an Android intent addressed to Keon's package, never the bare `keonwallet://` scheme. Wake links carry only the session topic. Keon always shows its full approval screen; a link never approves anything.
+
 ### StarknetKit Integration
 
 Use Keon Wallet with StarknetKit's modal:
