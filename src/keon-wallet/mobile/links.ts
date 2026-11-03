@@ -6,10 +6,12 @@
  *   key, so they only go to Keon's verified App Link, or on Android Chrome to
  *   an intent addressed to Keon's package. Never the bare `keonwallet://`
  *   scheme: any app can register it.
- * - Wake links only carry the session topic: they bring Keon forward so it
- *   picks up the request already sent over WalletConnect. Nothing secret.
+ * - Wake links only carry the session topic (and the request id): they bring
+ *   Keon forward so it picks up the request already sent over WalletConnect.
+ *   Nothing secret. On Android Chrome the SDK follows one by itself when a
+ *   request that needs approval is sent (openKeonOnRequest).
  *
- * Browsers only follow these from a user gesture: render them as a button.
+ * Otherwise browsers only follow these from a user gesture: render a button.
  */
 
 export const KEON_APP_LINK = 'https://keon.tokenkithq.io/wc'
@@ -49,8 +51,64 @@ export function getDeepLink(uri: string, userAgent?: string): KeonDeepLink {
   return { kind: 'qr', href: `${KEON_APP_LINK}?uri=${encoded}` }
 }
 
-/** The link that brings Keon forward for a request already sent on this session. */
-export function getWakeLink(sessionTopic: string): string {
+/**
+ * The link that brings Keon forward for a request already sent on this
+ * session. `requestId` lets Keon open that request straight away. On Android
+ * Chrome it is an intent addressed to Keon's package (the topic is not secret,
+ * but the intent opens the app every time, where a plain link may load the
+ * web page instead).
+ */
+export function getWakeLink(sessionTopic: string, opts: { requestId?: number | string; userAgent?: string } = {}): string {
   if (!/^[0-9a-f]{64}$/.test(sessionTopic)) throw new Error('getWakeLink: expected a 64-hex WalletConnect session topic')
-  return `${KEON_APP_LINK}?topic=${sessionTopic}`
+  const requestId = opts.requestId !== undefined && /^\d{1,20}$/.test(String(opts.requestId)) ? `&requestId=${opts.requestId}` : ''
+  const query = `topic=${sessionTopic}${requestId}`
+  if (keonPlatform(opts.userAgent) === 'android_chrome') {
+    const fallback = encodeURIComponent(KEON_INSTALL_URL)
+    return `intent://keon.tokenkithq.io/wc?${query}#Intent;scheme=https;package=${KEON_ANDROID_PACKAGE};S.browser_fallback_url=${fallback};end`
+  }
+  return `${KEON_APP_LINK}?${query}`
+}
+
+/** WalletConnect methods that wait for the user in Keon (approve or reject). */
+export const KEON_APPROVAL_METHODS: ReadonlySet<string> = new Set([
+  'starknet_requestAddInvokeTransaction',
+  'starknet_signTypedData',
+  'starknet_requestAddDeclareTransaction',
+  'starknet_requestAddDeployAccountTransaction',
+  'starknet_deployContract',
+  'starknet_declareIfNot',
+])
+
+/** Whether this browser can open Keon without a tap on the link itself. */
+export function canAutoOpenKeon(userAgent?: string): boolean {
+  // Android Chrome follows an intent to Keon's package from script while the
+  // tap that started the request is still fresh, and the dApp page stays.
+  // Elsewhere a scripted App Link can load Keon's web page in this tab
+  // instead, losing the dApp: those keep the "Open Keon" button.
+  return keonPlatform(userAgent) === 'android_chrome'
+}
+
+interface RequestSentSource {
+  on(event: 'session_request_sent', listener: (e: { topic: string; id: number; request: { method: string } }) => void): unknown
+  off(event: 'session_request_sent', listener: (e: { topic: string; id: number; request: { method: string } }) => void): unknown
+}
+
+/**
+ * Opens Keon as soon as a request that needs the user is published on this
+ * session, with its id, so the approval screen is waiting when Keon comes up.
+ * Pass the WalletConnect SignClient. Does nothing where `canAutoOpenKeon` is
+ * false. Returns a function that stops watching.
+ */
+export function openKeonOnRequest(
+  client: RequestSentSource,
+  sessionTopic: string,
+  open: (link: string) => void = (link) => { window.location.href = link },
+): () => void {
+  if (typeof window === 'undefined' || !canAutoOpenKeon()) return () => {}
+  const onSent = (e: { topic: string; id: number; request: { method: string } }) => {
+    if (e.topic !== sessionTopic || !KEON_APPROVAL_METHODS.has(e.request.method)) return
+    try { open(getWakeLink(sessionTopic, { requestId: e.id })) } catch { /* not a valid topic */ }
+  }
+  client.on('session_request_sent', onSent)
+  return () => { client.off('session_request_sent', onSent) }
 }

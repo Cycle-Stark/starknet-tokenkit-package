@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { getDeepLink, getWakeLink, keonPlatform } from './links'
+import { getDeepLink, getWakeLink, keonPlatform, openKeonOnRequest } from './links'
 
 const ANDROID_CHROME = 'Mozilla/5.0 (Linux; Android 14; Pixel 8) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Mobile Safari/537.36'
 const ANDROID_WEBVIEW = 'Mozilla/5.0 (Linux; Android 14; Pixel 8; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.0.0 Mobile Safari/537.36'
@@ -44,5 +44,62 @@ describe('getWakeLink', () => {
   it('carries only the session topic', () => {
     expect(getWakeLink('c'.repeat(64))).toBe(`https://keon.tokenkithq.io/wc?topic=${'c'.repeat(64)}`)
     expect(() => getWakeLink('not-a-topic')).toThrow()
+  })
+
+  it('adds the request id, and only a numeric one', () => {
+    expect(getWakeLink(TOPIC, { requestId: 1730000000123456, userAgent: IPHONE })).toBe(`https://keon.tokenkithq.io/wc?topic=${TOPIC}&requestId=1730000000123456`)
+    expect(getWakeLink(TOPIC, { requestId: '1&uri=x', userAgent: IPHONE })).toBe(`https://keon.tokenkithq.io/wc?topic=${TOPIC}`)
+  })
+
+  it('Android Chrome: an intent addressed to Keon\'s package', () => {
+    expect(getWakeLink(TOPIC, { requestId: 7, userAgent: ANDROID_CHROME })).toBe(
+      `intent://keon.tokenkithq.io/wc?topic=${TOPIC}&requestId=7#Intent;scheme=https;package=io.keon.wallet;S.browser_fallback_url=https%3A%2F%2Fkeon.tokenkithq.io;end`,
+    )
+  })
+})
+
+const TOPIC = 'c'.repeat(64)
+
+type Sent = { topic: string; id: number; request: { method: string } }
+function fakeClient() {
+  const fns = new Set<(e: Sent) => void>()
+  return {
+    on: (_: 'session_request_sent', fn: (e: Sent) => void) => fns.add(fn),
+    off: (_: 'session_request_sent', fn: (e: Sent) => void) => fns.delete(fn),
+    emit: (e: Sent) => fns.forEach((fn) => fn(e)),
+    size: () => fns.size,
+  }
+}
+
+describe('openKeonOnRequest', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('Android Chrome: opens Keon with the request id when an approval request is sent on this session', () => {
+    vi.stubGlobal('window', {})
+    vi.stubGlobal('navigator', { userAgent: ANDROID_CHROME })
+    const client = fakeClient()
+    const open = vi.fn()
+    const stop = openKeonOnRequest(client, TOPIC, open)
+
+    client.emit({ topic: TOPIC, id: 42, request: { method: 'starknet_call' } })
+    client.emit({ topic: 'd'.repeat(64), id: 43, request: { method: 'starknet_requestAddInvokeTransaction' } })
+    expect(open).not.toHaveBeenCalled()
+
+    client.emit({ topic: TOPIC, id: 44, request: { method: 'starknet_requestAddInvokeTransaction' } })
+    expect(open).toHaveBeenCalledOnce()
+    expect(open.mock.calls[0][0]).toContain(`wc?topic=${TOPIC}&requestId=44#Intent;`)
+
+    stop()
+    expect(client.size()).toBe(0)
+  })
+
+  it('iPhone and desktop: never opens by itself (the button stays)', () => {
+    for (const ua of [IPHONE, DESKTOP, ANDROID_WEBVIEW]) {
+      vi.stubGlobal('window', {})
+      vi.stubGlobal('navigator', { userAgent: ua })
+      const client = fakeClient()
+      openKeonOnRequest(client, TOPIC, vi.fn())
+      expect(client.size()).toBe(0)
+    }
   })
 })

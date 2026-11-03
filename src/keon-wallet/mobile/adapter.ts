@@ -9,7 +9,7 @@
 import type SignClient from '@walletconnect/sign-client'
 import type { SessionTypes } from '@walletconnect/types'
 import type { StarknetWindowObject } from '@starknet-io/types-js'
-import { getWakeLink, keonPlatform } from './links'
+import { getWakeLink, keonPlatform, openKeonOnRequest } from './links'
 
 // Map wallet-api method names to WC method names
 const METHOD_MAP: Record<string, string> = {
@@ -28,14 +28,20 @@ export interface WCAdapterOptions {
   address: string
   /** See KeonMobileConnectorOptions.onWakeWallet. */
   onWakeWallet?: (link: string, settled: Promise<unknown>) => void
+  /** See KeonMobileConnectorOptions.autoOpenWallet. Default true. */
+  autoOpenWallet?: boolean
 }
 
 
 type EventCallback = (...args: unknown[]) => void
 
 export function createWCStarknetWindowObject(opts: WCAdapterOptions): StarknetWindowObject {
-  const { client, session, chainId, address, onWakeWallet } = opts
+  const { client, session, chainId, address, onWakeWallet, autoOpenWallet = true } = opts
   const listeners = new Map<string, Set<EventCallback>>()
+
+  // Open Keon the moment a request that needs approval reaches the relay, so
+  // the user lands on it without tapping "Open Keon" (Android Chrome only).
+  const stopAutoOpen = autoOpenWallet ? openKeonOnRequest(client, session.topic) : () => {}
 
   // Listen for WC session events and forward them
   client.on('session_event', (event: { topic: string; params: { event: { name: string; data: unknown } } }) => {
@@ -47,6 +53,7 @@ export function createWCStarknetWindowObject(opts: WCAdapterOptions): StarknetWi
 
   client.on('session_delete', (event: { topic: string }) => {
     if (event.topic !== session.topic) return
+    stopAutoOpen()
     const fns = listeners.get('accountsChanged')
     if (fns) fns.forEach(fn => fn([]))
   })
@@ -86,7 +93,9 @@ export function createWCStarknetWindowObject(opts: WCAdapterOptions): StarknetWi
       })
       // On a phone, Keon answers only while it's running (the OS freezes it in
       // the background), reads included: offer the link that brings it forward
-      // until the request settles.
+      // until the request settles. On Android Chrome Keon is also opened
+      // automatically (above); the link stays as the fallback if the browser
+      // blocks that.
       if (onWakeWallet && keonPlatform() !== 'desktop') {
         try { onWakeWallet(getWakeLink(session.topic), pending.then(() => undefined, () => undefined)) } catch { /* not a valid topic: no link */ }
       }

@@ -67,5 +67,5 @@ export class KeonMobileConnector {
 // Re-export types and classes
 export type { KeonMobileConnectorOptions }
 export { KeonMobileBaseConnector }
-export { getDeepLink, getWakeLink, keonPlatform, KEON_APP_LINK } from './links'
+export { getDeepLink, getWakeLink, keonPlatform, canAutoOpenKeon, openKeonOnRequest, KEON_APPROVAL_METHODS, KEON_APP_LINK } from './links'
 export type { KeonDeepLink, KeonPlatform } from './links'

@@ -173,6 +173,7 @@ export class KeonMobileBaseConnector extends EventEmitter<ConnectorEvents> {
       chainId: this._chainId,
       address: this._address!,
       onWakeWallet: this._options.onWakeWallet,
+      autoOpenWallet: this._options.autoOpenWallet,
     })
 
     // Listen for networkChanged events to update chainId

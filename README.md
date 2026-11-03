@@ -295,11 +295,16 @@ const connector = KeonMobileConnector.init({
       showOpenKeonButton(href) // same as getWakeLink(session.topic)
       settled.then(hideOpenKeonButtonIfNoneLeft)
     },
+    // Default true: on Android Chrome, Keon opens by itself as soon as a
+    // transaction or signature request is sent, on that request.
+    // autoOpenWallet: false,
   },
 })
 ```
 
-Pair links carry the pairing key, so they only go to Keon's verified App Link (`https://keon.tokenkithq.io/wc`) or an Android intent addressed to Keon's package, never the bare `keonwallet://` scheme. Wake links carry only the session topic. Keon always shows its full approval screen; a link never approves anything.
+On Android Chrome you don't need the button for transactions and signatures: when one is sent, the connector opens Keon with the request id (`openKeonOnRequest`), and after the user answers Keon goes back to the browser. Keep the button anyway: it covers reads, other browsers (where a scripted link could load Keon's web page in your tab instead) and the rare case the browser blocks the jump. Using your own WalletConnect `SignClient`? Call `openKeonOnRequest(client, session.topic)` once per session.
+
+Pair links carry the pairing key, so they only go to Keon's verified App Link (`https://keon.tokenkithq.io/wc`) or an Android intent addressed to Keon's package, never the bare `keonwallet://` scheme. Wake links carry only the session topic and request id. Keon always shows its full approval screen; a link never approves anything.
 
 ### StarknetKit Integration
 

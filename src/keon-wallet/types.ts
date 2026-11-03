@@ -313,6 +313,13 @@ export interface KeonMobileConnectorOptions {
    * never called on desktop.
    */
   onWakeWallet?: (link: string, settled: Promise<unknown>) => void
+  /**
+   * Open Keon by itself when a transaction or signature request is sent, on
+   * browsers that allow it (Android Chrome), with the request id so Keon shows
+   * that request at once. Elsewhere the `onWakeWallet` button is the way in.
+   * Default true.
+   */
+  autoOpenWallet?: boolean
 }
 
 /**
