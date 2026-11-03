@@ -63,8 +63,19 @@ jobs:
         if: steps.check.outputs.publish == 'true'
         run: npm run build:package
 
+      # A version tag and its main push start two runs at once. Both can see
+      # the version as new before npm shows it; the second then gets a 409.
+      # That means the other run published it, so it's not a failure.
       - name: Publish to npm
         if: steps.check.outputs.publish == 'true'
-        run: npm publish --access public
+        run: |
+          set +e
+          npm publish --access public 2>&1 | tee publish.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ] && grep -qE "E409|previously (published|staged)|cannot publish over" publish.log; then
+            echo "Already published by the other run for this version."
+            exit 0
+          fi
+          exit $status
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
