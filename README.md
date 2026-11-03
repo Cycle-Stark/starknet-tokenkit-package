@@ -487,7 +487,7 @@ Two Vite configs live in the repo:
 
 ## Releasing
 
-Bump the version in `package.json`, push, then create a GitHub release. The `npm-publish.yml` workflow runs `npm run build && npm publish` on release creation.
+Bump the version in `package.json` (`npm version patch|minor|major`, which also creates the `vX.Y.Z` tag) and push with `git push --follow-tags`. `npm-publish.yml` runs on a `v*` tag, on a push to `main` and on a GitHub release. It tests, builds and publishes only when that version is not on npm yet, so the tag and the main push publish once. A tag that doesn't match `package.json` fails the run.
 
 ## License
 
