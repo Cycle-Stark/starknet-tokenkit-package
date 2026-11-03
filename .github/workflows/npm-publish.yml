@@ -1,11 +1,24 @@
-# Publishes the package to npm when a GitHub release is created.
-# https://docs.github.com/en/actions/publishing-packages/publishing-nodejs-packages
+# Publishes the package to npm whenever package.json carries a version that
+# is not on npm yet. Runs on:
+#   - a pushed version tag (v3.5.1), the usual way to release;
+#   - a push to main (bump "version" in the same push and it ships);
+#   - a GitHub release, and by hand (Actions > Publish package > Run).
+# Every path checks npm first, so a tag plus its main push, or a release
+# created from a tag, publish once and the rest skip.
 
 name: Publish package
 
 on:
+  push:
+    branches: [main]
+    tags: ["v*"]
   release:
     types: [created]
+  workflow_dispatch:
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -21,13 +34,37 @@ jobs:
           registry-url: https://registry.npmjs.org/
           cache: npm
 
+      - name: Is this version new?
+        id: check
+        run: |
+          NAME=$(node -p "require('./package.json').name")
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ "$GITHUB_REF" == refs/tags/v* && "${GITHUB_REF#refs/tags/v}" != "$VERSION" ]]; then
+            echo "::error::Tag ${GITHUB_REF#refs/tags/} does not match package.json version $VERSION"
+            exit 1
+          fi
+          if npm view "$NAME@$VERSION" version >/dev/null 2>&1; then
+            echo "$NAME@$VERSION is already on npm, nothing to publish."
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Install dependencies
+        if: steps.check.outputs.publish == 'true'
         run: npm ci
 
+      - name: Test
+        if: steps.check.outputs.publish == 'true'
+        run: npm test
+
       - name: Build library
+        if: steps.check.outputs.publish == 'true'
         run: npm run build:package
 
       - name: Publish to npm
+        if: steps.check.outputs.publish == 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
