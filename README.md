@@ -3,7 +3,7 @@
 [![npm version](https://img.shields.io/npm/v/starknet-tokenkit.svg)](https://www.npmjs.com/package/starknet-tokenkit)
 [![npm downloads](https://img.shields.io/npm/dt/starknet-tokenkit)](https://www.npmjs.com/package/starknet-tokenkit)
 
-A drop-in token selector for Starknet dApps. Themeable, keyboard-navigable, and built to slot into wallets, DEXes, and any UI that needs a tokens picker.
+A drop-in token selector for Starknet dApps, themeable and keyboard-navigable, plus the connector for [Keon](https://keon.tokenkithq.io), a Starknet wallet for Chrome, Brave, Firefox and Android ([jump to Keon](#keon-wallet)).
 
 - **Live playground:** https://cycle-stark.github.io/starknet-tokenkit-package/
 - **Docs:** https://docs.tokenkithq.io/docs/sdk/installation
@@ -119,13 +119,13 @@ const myTheme: Theme = {
 
 Available presets: `dark`, `light`, `blue`, `gradient`, `sunset`, `ocean`, `monochrome`, `emerald`, `lavender`, `ember`, `frost`, `carbon`, `candy`.
 
-The `fonts.fontFamily` is honored across all elements (including native form controls — `<input>`, `<button>` — which normally ignore inherited `font-family`).
+The `fonts.fontFamily` is honored across all elements (including native form controls such as `<input>` and `<button>`, which normally ignore inherited `font-family`).
 
 ## Keyboard
 
-- `↑` / `↓` — move focus through results
-- `Enter` — select the focused token
-- `Esc` — close the modal
+- `↑` / `↓`: move focus through results
+- `Enter`: select the focused token
+- `Esc`: close the modal
 
 ## Starknet error messages
 
@@ -189,18 +189,20 @@ else if (e.kind === StarknetErrors.CONTRACT_NOT_FOUND) showWrongNetwork(e.failin
 
 ## Keon wallet
 
-`starknet-tokenkit/keon-wallet` connects dApps to Keon, a Starknet wallet for Chrome and Android. It replaces the old `@keon-wallet/sdk` package: change the import path, the API is the same.
+`starknet-tokenkit/keon-wallet` connects dApps to Keon, a Starknet wallet for Chrome, Brave and Firefox (extension) and Android (app). It replaces the old `@keon-wallet/sdk` package: change the import path, the API is the same.
 
 | Before | Now |
 |---|---|
 | `@keon-wallet/sdk` | `starknet-tokenkit/keon-wallet` |
 | `@keon-wallet/sdk/mobile` | `starknet-tokenkit/keon-wallet/mobile` |
 
-TypeScript SDK for integrating with **Keon Wallet** — a Starknet wallet available as a Chrome extension and mobile app (Android/iOS).
+| Your dApp runs in | Use |
+|---|---|
+| A desktop browser with the extension | `starknet-tokenkit/keon-wallet`, or StarknetKit / starknet-react with the injected id `keon` |
+| Keon's in-app browser on Android | The same: Keon injects `window.starknet_keon` there too |
+| Chrome or another browser on an Android phone | `starknet-tokenkit/keon-wallet/mobile`: WalletConnect with deep links that open Keon |
 
-- **Browser extension** — injected wallet detection (`window.starknet_keon`)
-- **Mobile** — WalletConnect v2 with automatic in-app browser detection
-- **StarknetKit** — works as a connector with StarknetKit
+Full guides: [SDK integration](https://docs.tokenkithq.io/docs/keon-wallet/v1/sdk-integration), [Connect from Android](https://docs.tokenkithq.io/docs/keon-wallet/v1/sdk-android), [StarknetKit and starknet-react](https://docs.tokenkithq.io/docs/keon-wallet/v1/sdk-starknetkit-and-starknet-react). The [Keon test dApp](https://cycle-stark.github.io/keon-test-dapp/) uses all three paths.
 
 ### Installation
 
@@ -216,7 +218,7 @@ npm install starknet-tokenkit starknet starknetkit @walletconnect/sign-client
 
 `starknet`, `starknetkit` and `@walletconnect/sign-client` are optional peer dependencies: the connector uses your app's copies, so the `Account` objects it returns come from the same `starknet` you use.
 
-### Quick Start — Browser Extension
+### Quick start: browser extension
 
 ```typescript
 import { detectKeonWallet, connect, getAccount } from 'starknet-tokenkit/keon-wallet'
@@ -240,75 +242,67 @@ const result = await account.execute({
 console.log(`Transaction hash: ${result.transaction_hash}`)
 ```
 
-### Mobile — WalletConnect v2
+### Android: connect with deep links
 
-The mobile connector automatically detects if the dApp is running inside Keon Wallet's in-app browser (uses injected wallet) or externally (uses WalletConnect).
+A dApp opened in a phone's own browser has no extension. It pairs with the Keon app over WalletConnect, and a tap opens Keon to approve.
 
 ```typescript
-import { KeonMobileConnector, isInKeonMobileBrowser } from 'starknet-tokenkit/keon-wallet/mobile'
+import { RpcProvider } from 'starknet'
+import { KeonMobileBaseConnector, getDeepLink } from 'starknet-tokenkit/keon-wallet/mobile'
 
-const connector = KeonMobileConnector.init({
-  options: {
-    dappName: 'My dApp',
-    url: window.location.hostname,
-    projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
+const connector = new KeonMobileBaseConnector({
+  dappName: 'My dApp',
+  url: window.location.origin,
+  icons: ['https://my-dapp.xyz/icon.png'],
+  chainId: 'SN_MAIN', // must match the network selected in Keon
+  projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
+  // 1. Show the pairing link as a button the user taps
+  onDisplayUri: (uri) => {
+    const link = getDeepLink(uri)
+    // 'intent' (Android Chrome) or 'app_link' (other phone browsers): <a href={link.href}>Open in Keon</a>
+    // 'qr' (desktop): render a QR code of `uri`
+  },
+  // 2. While a request waits for Keon, show an "Open Keon" button
+  onWakeWallet: (href, settled) => {
+    showOpenKeonButton(href)
+    settled.finally(hideOpenKeonButton)
   },
 })
 
-// Use with StarknetKit
-import { connect } from 'starknetkit'
+// 3. Connect (resolves when the user approves in Keon)
+const { account: address } = await connector.connect()
 
-const result = await connect({
-  connectors: [connector],
-  modalMode: 'alwaysAsk',
-})
+// 4. Send transactions and sign messages
+const account = await connector.account(new RpcProvider({ nodeUrl: 'https://your-starknet-rpc' }))
+await account.execute([{ contractAddress: '0x...', entrypoint: 'transfer', calldata: ['0x...', '100', '0'] }])
+await account.signMessage(typedData)
+
+// Lower level: connector.wallet.request({ type: 'wallet_addInvokeTransaction', params: { calls } })
 ```
 
-#### Environment Detection
+- **Links need a tap.** Browsers only open another app from a user gesture, so render links as buttons; never redirect on load.
+- **Keon opens by itself on Android Chrome** for transactions and signatures (`autoOpenWallet`, default `true`), straight on that request, and returns to the browser after the user answers. Keep the `onWakeWallet` button for other browsers and the rare blocked jump.
+- **Keon must be on screen to answer**, because Android pauses it in the background. That is what the automatic opening and the button are for. Reads made through `connector.account(provider)` go to your provider and don't need Keon.
+- **Same network.** Keon refuses requests for a network it is not on. Users switch networks in Keon; the connector emits `change`.
+- **Your own `SignClient`?** Use `getDeepLink(uri)` for the pairing button, call `openKeonOnRequest(client, session.topic)` once per session, and `getWakeLink(session.topic)` for the Open Keon button.
 
-| Environment | Connector Used | How it works |
+Pair links carry the pairing key, so they only go to Keon's verified App Link (`https://keon.tokenkithq.io/wc`) or an Android intent addressed to Keon's package, never the bare `keonwallet://` scheme. A link never approves anything: Keon always shows its full approval screen.
+
+#### Inside or outside Keon: `KeonMobileConnector`
+
+`KeonMobileConnector.init({ options })` returns StarknetKit's `InjectedConnector` when your dApp is open inside Keon's in-app browser (`isInKeonMobileBrowser()`), and the WalletConnect connector above everywhere else. Use it when you list Keon in StarknetKit's modal:
+
+| Environment | Connector | How it works |
 |---|---|---|
-| Inside Keon mobile browser | `InjectedConnector` | Reads `window.starknet_keon` directly |
-| External mobile browser | `KeonMobileBaseConnector` | WalletConnect v2 deep link to Keon app |
-| Desktop browser | `InjectedConnector` | Standard extension injection |
+| Keon's in-app browser | `InjectedConnector` | Reads `window.starknet_keon` |
+| A phone's own browser | `KeonMobileBaseConnector` | WalletConnect, deep links to the Keon app |
+| Desktop with the extension | `InjectedConnector` | Standard extension injection |
 
-#### Opening Keon from the phone's browser
+### StarknetKit and starknet-react
 
-Browsers only follow app links from a tap, so show these as buttons.
+Keon's injected wallet has the id `keon`, so any injected connector finds it.
 
-```typescript
-import { getDeepLink, getWakeLink } from 'starknet-tokenkit/keon-wallet/mobile'
-
-// Connect: `uri` is the WalletConnect pairing URI.
-const link = getDeepLink(uri)
-// link.kind: 'intent' (Android Chrome), 'app_link' (other mobile browsers), 'qr' (desktop: show a QR of `uri`)
-openButton.href = link.href
-
-// Requests: bring Keon forward for a request already sent on the session.
-const connector = KeonMobileConnector.init({
-  options: {
-    dappName: 'My dApp',
-    url: window.location.hostname,
-    projectId: 'YOUR_WALLETCONNECT_PROJECT_ID',
-    // Every request on a phone, reads included: Keon answers only while it's running.
-    onWakeWallet: (href, settled) => {
-      showOpenKeonButton(href) // same as getWakeLink(session.topic)
-      settled.then(hideOpenKeonButtonIfNoneLeft)
-    },
-    // Default true: on Android Chrome, Keon opens by itself as soon as a
-    // transaction or signature request is sent, on that request.
-    // autoOpenWallet: false,
-  },
-})
-```
-
-On Android Chrome you don't need the button for transactions and signatures: when one is sent, the connector opens Keon with the request id (`openKeonOnRequest`), and after the user answers Keon goes back to the browser. Keep the button anyway: it covers reads, other browsers (where a scripted link could load Keon's web page in your tab instead) and the rare case the browser blocks the jump. Using your own WalletConnect `SignClient`? Call `openKeonOnRequest(client, session.topic)` once per session.
-
-Pair links carry the pairing key, so they only go to Keon's verified App Link (`https://keon.tokenkithq.io/wc`) or an Android intent addressed to Keon's package, never the bare `keonwallet://` scheme. Wake links carry only the session topic and request id. Keon always shows its full approval screen; a link never approves anything.
-
-### StarknetKit Integration
-
-Use Keon Wallet with StarknetKit's modal:
+**StarknetKit**, with the extension and phones in one modal:
 
 ```typescript
 import { connect } from 'starknetkit'
@@ -333,9 +327,27 @@ const result = await connect({
   modalMode: 'alwaysAsk',
 })
 
-if (result.wallet) {
-  console.log('Connected:', result.wallet.account.address)
+if (result.wallet && result.connectorData?.account) {
+  console.log('Connected:', result.connectorData.account)
+  await result.wallet.request({ type: 'wallet_addInvokeTransaction', params: { calls } })
 }
+```
+
+**starknet-react:**
+
+```tsx
+import { StarknetConfig, InjectedConnector, publicProvider, useSendTransaction, useSignTypedData } from '@starknet-react/core'
+import { mainnet, sepolia } from '@starknet-react/chains'
+
+const connectors = [new InjectedConnector({ options: { id: 'keon', name: 'Keon Wallet' } })]
+
+<StarknetConfig chains={[mainnet, sepolia]} provider={publicProvider()} connectors={connectors}>
+  {children}
+</StarknetConfig>
+
+// In a component
+const { sendAsync } = useSendTransaction({ calls })
+const { signTypedDataAsync } = useSignTypedData({ params: typedData })
 ```
 
 ### API Reference
@@ -474,16 +486,18 @@ function App() {
 ## Development
 
 ```bash
-pnpm install
-pnpm dev                # playground at http://localhost:5173
-pnpm run build:package  # build the library to dist/ (tsup)
-pnpm run build:pages    # build the playground SPA to dist-pages/
-pnpm run preview:pages  # preview the SPA build locally
+npm install
+npm run dev             # playground at http://localhost:5173
+npm test                # vitest
+npm run build:package   # build the library to dist/ (token picker + Keon entry points)
+npm run build:pages     # build the playground SPA to dist-pages/
+npm run preview:pages   # preview the SPA build locally
 ```
 
-Two Vite configs live in the repo:
-- `vite.config.ts` — library mode (used by `pnpm build`)
-- `vite.config.pages.ts` — SPA mode for the playground (used by `pnpm build:pages` and the Pages workflow)
+Three Vite configs live in the repo:
+- `vite.config.ts`: library mode for the token picker
+- `vite.config.keon.ts`: the `keon-wallet` and `keon-wallet/mobile` entry points
+- `vite.config.pages.ts`: SPA mode for the playground (used by `npm run build:pages` and the Pages workflow)
 
 ## Releasing
 

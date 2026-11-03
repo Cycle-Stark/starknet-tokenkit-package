@@ -7,7 +7,7 @@
  *
  * Usage:
  * ```typescript
- * import { KeonMobileConnector } from '@keon-wallet/sdk/mobile'
+ * import { KeonMobileConnector } from 'starknet-tokenkit/keon-wallet/mobile'
  *
  * const connector = KeonMobileConnector.init({
  *   options: {

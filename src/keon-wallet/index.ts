@@ -5,7 +5,7 @@
  * 
  * @example
  * ```typescript
- * import { detectKeonWallet, connect, getAccount } from '@keon-wallet/sdk'
+ * import { detectKeonWallet, connect, getAccount } from 'starknet-tokenkit/keon-wallet'
  * 
  * // Wait for wallet to be available
  * const wallet = await detectKeonWallet()
